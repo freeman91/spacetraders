@@ -1,0 +1,7 @@
+{
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "python.formatting.provider": "none",
+  "python.linting.pylintArgs": ["--disable=C0114,C0115,C0116,E0401,W0718"]
+}
