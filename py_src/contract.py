@@ -44,18 +44,20 @@ class Contract:
             ship.cargo.get("inventory"),
             lambda good: good.get("symbol") == trade_symbol,
         )
+        units = trade_good.get("units")
 
         result = post_request(
             f"my/contracts/{self.id_}/deliver",
             {
                 "shipSymbol": ship.symbol,
                 "tradeSymbol": trade_symbol,
-                "units": trade_good.get("units"),
+                "units": units,
             },
         )
 
         ship.cargo = result.get("cargo")
-        print(pformat(result))
-        log_message(pformat(result.get("agent")))
+        # self = result.get("contract")
+        log_message(units + " " + trade_symbol + " delivered")
+        log_message("Fulfilled: " + self.terms.get("deliver")[0].get("unitsFulfilled"))
 
         return result
