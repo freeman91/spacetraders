@@ -84,16 +84,12 @@ class Ship:
         return result
 
     def cooldown(self):
-        try:
-            result = get_request(f"my/ships/{self.symbol}/cooldown")
+        result = get_request(f"my/ships/{self.symbol}/cooldown")
+        if result != {}:
             remaining = result.get("remainingSeconds")
-
-            pprint(result)
-
             return f"{remaining} seconds remaining"
 
-        except Exception:
-            return "ready for extraction"
+        return "ready for extraction"
 
     def navigate(self, waypoint: str):
         result = post_request(

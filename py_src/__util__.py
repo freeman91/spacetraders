@@ -25,6 +25,10 @@ def get_request(path):
         response = requests.get(
             API_URL + path, headers={"Authorization": f"Bearer {TOKEN}"}, timeout=30
         )
+
+        if response.status_code == 204:
+            return {}
+
         return response.json().get("data")
 
     except Exception as err:
