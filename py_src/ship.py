@@ -1,5 +1,5 @@
 from pprint import pprint, pformat
-from __util__ import get_request, post_request
+from __util__ import get_request, post_request, log_message
 
 
 class Ship:
@@ -53,6 +53,7 @@ class Ship:
     def get_nav(self):
         result = get_request(f"my/ships/{self.symbol}/nav")
         self.nav = result
+        return result
 
     def cooldown(self):
         try:
@@ -70,17 +71,17 @@ class Ship:
         )
         self.nav = result["nav"]
         self.fuel = result["fuel"]
-        print(f"in transit to {self.nav.get('route').get('destination').get('symbol')}")
+        log_message(self.symbol + f" in transit to {self.nav.get('route').get('destination').get('symbol')}")
 
     def dock(self):
         result = post_request(f"my/ships/{self.symbol}/dock")
         self.nav = result["nav"]
-        print(f"docked at {self.nav.get('waypointSymbol')}")
+        log_message(self.symbol + f" docked at {self.nav.get('waypointSymbol')}")
 
     def orbit(self):
         result = post_request(f"my/ships/{self.symbol}/orbit")
         self.nav = result["nav"]
-        print(f"orbiting {self.nav.get('waypointSymbol')}")
+        log_message(self.symbol + f" orbiting {self.nav.get('waypointSymbol')}")
 
     def survey(self):
         result = post_request(f"my/ships/{self.symbol}/survey")
@@ -91,12 +92,13 @@ class Ship:
         result = post_request(f"my/ships/{self.symbol}/refuel")
         self.fuel = result["fuel"]
         agent.credits = result["agent"]["credits"]
-        print("refueled")
+        
+        log_message(self.symbol + " refueled")
 
     def extract(self):
         result = post_request(f"my/ships/{self.symbol}/extract")
         self.cargo = result.get("cargo")
-        print(f"Extracted: {result['extraction']['yield']}")
+        log_message(self.symbol + f" extracted: {result['extraction']['yield']}")
 
     def sell(self, agent, _symbol: str, units: int):
         result = post_request(
@@ -114,5 +116,6 @@ class Ship:
             "total": transaction.get("totalPrice"),
             "pricePerUnit": transaction.get("pricePerUnit"),
         }
-        print("Sell: ", pformat(response))
+        
+        log_message(self.symbol + f" sold: {pformat(response)}")
         return result["transaction"]

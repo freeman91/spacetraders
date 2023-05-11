@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from dotenv import load_dotenv
 import requests
 
@@ -7,6 +8,10 @@ load_dotenv()
 
 TOKEN = os.getenv("TOKEN")
 API_URL = "https://api.spacetraders.io/v2/"
+
+
+def log_message(message: str):
+    print("[" + datetime.now().isoformat()[:19] + "]:: " + message)
 
 
 def get_system(location: str):

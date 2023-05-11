@@ -4,6 +4,7 @@ from pydash import find, filter_
 
 from agent import Agent
 from waypoint import Waypoint
+from __util__ import log_message
 
 
 PLANET = "X1-DF55-20250Z"
@@ -29,11 +30,11 @@ def extract_sell_til_enough(_ship, _contract):
         _ship.get_cargo()
         units = _ship.cargo.get("units")
         capacity = _ship.cargo.get("capacity")
-        print(f"Cargo: {units} / {capacity}")
+        log_message(f"Cargo: {units} / {capacity}")
 
         if units < capacity:
             _ship.extract()
-            print("Cooldown . . . Wait 70s")
+            log_message("Cooldown . . . Wait 70s")
             sleep(70)
 
         else:
@@ -61,12 +62,12 @@ def main():
             ship.orbit()
 
         elif ship.nav.get("status") == "IN_TRANSIT":
-            print("Wait 25s")
+            log_message(" . . . Wait 25s")
             sleep(25)
 
         if ship.nav.get("waypointSymbol") != ASTEROID_FIELD:
             ship.navigate(ASTEROID_FIELD)
-            print("...Wait 25s")
+            log_message(" . . . Wait 25s")
             sleep(25)
             ship.get_nav()
 
@@ -75,7 +76,7 @@ def main():
 
         # 4: Navigate to planet
         ship.navigate(PLANET)
-        print("...Wait 25s")
+        log_message(" . . . Wait 25s")
         sleep(25)
         ship.dock()
 
@@ -87,8 +88,27 @@ def main():
         ship.orbit()
 
 
+def find_system_trait(idx: int, trait: str):
+    system = agent.systems()[idx]
+    print(system.get('symbol'))
+    print()
+
+    for waypoint in system['waypoints']:
+        wp = Waypoint(waypoint.get('symbol'))
+        print(wp)
+        # for trait in wp.traits:
+        #         if trait.get('symbol') == trait:
+        #                  print(wp.symbol)
+        #                  print()
+
+def test():
+    for idx in range(10):
+        find_system_trait(idx, "SHIPYARD")
+
 if __name__ == "__main__":
     agent = Agent()
     ship = agent.get_ship(0)
     contract = agent.get_contract(0)
     system = agent.get_system()
+
+    

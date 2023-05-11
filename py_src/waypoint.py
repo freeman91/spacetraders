@@ -43,8 +43,10 @@ class Waypoint:
         _system = get_system(self.symbol)
         result = get_request(f"systems/{_system}/waypoints/{self.symbol}/market")
         pprint(result)
+        return result
 
     def get_shipyard(self):
         _system = get_system(self.symbol)
         result = get_request(f"systems/{_system}/waypoints/{self.symbol}/shipyard")
         pprint(result)
+        return result

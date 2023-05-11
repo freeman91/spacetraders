@@ -1,5 +1,5 @@
-from pprint import pformat
-from __util__ import get_request, get_system
+from pprint import pformat, pprint
+from __util__ import get_request, get_system, post_request
 from contract import Contract
 from system import System
 from ship import Ship
@@ -49,3 +49,8 @@ class Agent:
     def get_ship(self, idx):
         ships = self.get_ships()
         return Ship(ships[idx]["symbol"])
+
+    def purchase_ship(self, ship_type: str, waypoint: str):
+        result = post_request("my/ships", {"shipType": ship_type, "waypointSymbol": waypoint})
+        pprint(result)
+        return result
