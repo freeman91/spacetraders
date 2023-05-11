@@ -1,4 +1,7 @@
+from time import sleep
 from pprint import pprint, pformat
+from pydash import find
+
 from __util__ import get_request, post_request, log_message
 
 
@@ -46,6 +49,31 @@ class Ship:
         self.registration = result.get("registration")
         self.cargo = result.get("cargo")
 
+    def nav_wait(self):
+        wait = 50
+
+        if self.engine.get("symbol") == "ENGINE_ION_DRIVE_I":
+            wait = 35
+        elif self.engine.get("symbol") == "ENGINE_ION_DRIVE_II":
+            wait = 25
+
+        log_message(f". . . Wait {wait} seconds")
+        sleep(wait)
+
+    def extract_wait(self):
+        wait = 100
+        mining_mount = find(
+            self.mounts, lambda mount: mount["symbol"].startswith("MOUNT_MINING")
+        ).get("symbol")
+
+        if mining_mount == "MOUNT_MINING_LASER_I":
+            wait = 70
+        elif mining_mount == "MOUNT_MINING_LASER_II":
+            wait = 80
+
+        log_message(f"Cooldown . . . Wait {wait} seconds")
+        sleep(wait)
+
     def get_cargo(self):
         result = get_request(f"my/ships/{self.symbol}/cargo")
         self.cargo = result
@@ -71,7 +99,10 @@ class Ship:
         )
         self.nav = result["nav"]
         self.fuel = result["fuel"]
-        log_message(self.symbol + f" in transit to {self.nav.get('route').get('destination').get('symbol')}")
+        log_message(
+            self.symbol
+            + f" in transit to {self.nav.get('route').get('destination').get('symbol')}"
+        )
 
     def dock(self):
         result = post_request(f"my/ships/{self.symbol}/dock")
@@ -92,7 +123,7 @@ class Ship:
         result = post_request(f"my/ships/{self.symbol}/refuel")
         self.fuel = result["fuel"]
         agent.credits = result["agent"]["credits"]
-        
+
         log_message(self.symbol + " refueled")
 
     def extract(self):
@@ -116,6 +147,6 @@ class Ship:
             "total": transaction.get("totalPrice"),
             "pricePerUnit": transaction.get("pricePerUnit"),
         }
-        
+
         log_message(self.symbol + f" sold: {pformat(response)}")
         return result["transaction"]

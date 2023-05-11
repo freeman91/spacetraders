@@ -1,17 +1,17 @@
-from time import sleep
-from pprint import pprint
 from pydash import find, filter_
 
+import prompts
 from agent import Agent
+from contract import Contract
+from ship import Ship
 from waypoint import Waypoint
 from __util__ import log_message
 
 
-PLANET = "X1-DF55-20250Z"
-ASTEROID_FIELD = "X1-DF55-17335A"
+agent = Agent()
 
 
-def sell_trade_goods(_ship, _contract):
+def sell_trade_goods(_ship: Ship, _contract: Contract):
     # sell all trade goods not aluminum or antimatter
     sellable_goods = filter_(
         _ship.cargo.get("inventory"),
@@ -25,7 +25,7 @@ def sell_trade_goods(_ship, _contract):
         _ship.sell(agent, good.get("symbol"), good.get("units"))
 
 
-def extract_sell_til_enough(_ship, _contract):
+def extract_sell_til_enough(_ship: Ship, _contract: Contract):
     while True:
         _ship.get_cargo()
         units = _ship.cargo.get("units")
@@ -34,8 +34,7 @@ def extract_sell_til_enough(_ship, _contract):
 
         if units < capacity:
             _ship.extract()
-            log_message("Cooldown . . . Wait 70s")
-            sleep(70)
+            _ship.extract_wait()
 
         else:
             _ship.dock()
@@ -48,67 +47,51 @@ def extract_sell_til_enough(_ship, _contract):
             lambda good: good.get("symbol")
             == _contract.terms.get("deliver")[0].get("tradeSymbol"),
         )
-        if contract_good_in_inventory and contract_good_in_inventory.get("units") > 20:
+        if contract_good_in_inventory and contract_good_in_inventory.get("units") > 30:
             break
 
 
-def main():
+def extract_loop(_ship: Ship, _contract: Contract, _waypoint: Waypoint):
     while True:
-        ship.get_nav()
-        ship.get_cargo()
+        _ship.get_nav()
+        _ship.get_cargo()
 
         # 1: Orbitting ASTEROID FIELD
-        if ship.nav.get("status") == "DOCKED":
-            ship.orbit()
+        if _ship.nav.get("status") == "DOCKED":
+            _ship.orbit()
 
-        elif ship.nav.get("status") == "IN_TRANSIT":
-            log_message(" . . . Wait 25s")
-            sleep(25)
+        elif _ship.nav.get("status") == "IN_TRANSIT":
+            _ship.nav_wait()
 
-        if ship.nav.get("waypointSymbol") != ASTEROID_FIELD:
-            ship.navigate(ASTEROID_FIELD)
-            log_message(" . . . Wait 25s")
-            sleep(25)
-            ship.get_nav()
+        if _ship.nav.get("waypointSymbol") != _waypoint.symbol:
+            _ship.navigate(_waypoint.symbol)
+            _ship.nav_wait()
+            _ship.get_nav()
 
         # 2: Extract and sell until have enough Aluminum
-        extract_sell_til_enough(ship, contract)
+        extract_sell_til_enough(_ship, _contract)
 
         # 4: Navigate to planet
-        ship.navigate(PLANET)
-        log_message(" . . . Wait 25s")
-        sleep(25)
-        ship.dock()
+        _ship.navigate(_contract.terms.get("deliver")[0].get("destinationSymbol"))
+        _ship.nav_wait()
+        _ship.dock()
 
         # 5: Navigate to planet and deliver trade goods in contract
-        contract.deliver(ship)
+        _contract.deliver(_ship)
 
         # 6: Refuel
-        ship.refuel(agent)
-        ship.orbit()
+        _ship.refuel(agent)
+        _ship.orbit()
 
 
-def find_system_trait(idx: int, trait: str):
-    system = agent.systems()[idx]
-    print(system.get('symbol'))
-    print()
+def setup_extraction_loop():
+    log_message("Setup Extraction Loop...")
+    ship = prompts.ship(agent)
+    contract = prompts.contract(agent)
+    waypoint = prompts.waypoint(agent, "ASTEROID_FIELD")
 
-    for waypoint in system['waypoints']:
-        wp = Waypoint(waypoint.get('symbol'))
-        print(wp)
-        # for trait in wp.traits:
-        #         if trait.get('symbol') == trait:
-        #                  print(wp.symbol)
-        #                  print()
+    extract_loop(ship, contract, waypoint)
 
-def test():
-    for idx in range(10):
-        find_system_trait(idx, "SHIPYARD")
 
 if __name__ == "__main__":
-    agent = Agent()
-    ship = agent.get_ship(0)
-    contract = agent.get_contract(0)
-    system = agent.get_system()
-
-    
+    pass

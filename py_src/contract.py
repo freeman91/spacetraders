@@ -1,4 +1,4 @@
-from pprint import pformat, pprint
+from pprint import pformat
 from pydash import find
 from __util__ import get_request, post_request, log_message
 
@@ -54,8 +54,7 @@ class Contract:
             },
         )
 
-
-        ship.cargo = result.get('cargo')
-        log_message(pformat(result.get('agent')))
+        ship.cargo = result.get("cargo")
+        log_message(pformat(result.get("agent")))
 
         return result
