@@ -85,9 +85,11 @@ class Ship:
 
     def cooldown(self):
         try:
-            remaining = get_request(f"my/ships/{self.symbol}/cooldown")[
-                "remainingSeconds"
-            ]
+            result = get_request(f"my/ships/{self.symbol}/cooldown")
+            remaining = result.get("remainingSeconds")
+
+            pprint(result)
+
             return f"{remaining} seconds remaining"
 
         except Exception:

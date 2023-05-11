@@ -55,6 +55,7 @@ class Contract:
         )
 
         ship.cargo = result.get("cargo")
+        print(pformat(result))
         log_message(pformat(result.get("agent")))
 
         return result

@@ -39,7 +39,6 @@ def extract_sell_til_enough(_ship: Ship, _contract: Contract):
         else:
             _ship.dock()
             sell_trade_goods(_ship, _contract)
-
             _ship.orbit()
 
         contract_good_in_inventory = find(
@@ -52,11 +51,10 @@ def extract_sell_til_enough(_ship: Ship, _contract: Contract):
 
 
 def extract_loop(_ship: Ship, _contract: Contract, _waypoint: Waypoint):
-    while True:
-        _ship.get_nav()
-        _ship.get_cargo()
+    _ship.get_nav()
 
-        # 1: Orbitting ASTEROID FIELD
+    while True:
+        # 1: Orbitting _waypooint
         if _ship.nav.get("status") == "DOCKED":
             _ship.orbit()
 
@@ -68,7 +66,7 @@ def extract_loop(_ship: Ship, _contract: Contract, _waypoint: Waypoint):
             _ship.nav_wait()
             _ship.get_nav()
 
-        # 2: Extract and sell until have enough Aluminum
+        # 2: Extract and sell until have enough _contract trade
         extract_sell_til_enough(_ship, _contract)
 
         # 4: Navigate to planet
@@ -76,7 +74,7 @@ def extract_loop(_ship: Ship, _contract: Contract, _waypoint: Waypoint):
         _ship.nav_wait()
         _ship.dock()
 
-        # 5: Navigate to planet and deliver trade goods in contract
+        # 5: Deliver trade goods in contract
         _contract.deliver(_ship)
 
         # 6: Refuel

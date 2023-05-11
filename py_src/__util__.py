@@ -21,18 +21,31 @@ def get_system(location: str):
 
 
 def get_request(path):
-    response = requests.get(
-        API_URL + path, headers={"Authorization": f"Bearer {TOKEN}"}, timeout=30
-    )
-    return response.json().get("data")
+    try:
+        response = requests.get(
+            API_URL + path, headers={"Authorization": f"Bearer {TOKEN}"}, timeout=30
+        )
+        return response.json().get("data")
+
+    except Exception as err:
+        log_message(f"ERROR :: {err}")
+        return {}
 
 
 def post_request(path, body=None):
     if not body:
         body = {}
 
-    response = requests.post(
-        API_URL + path, body, headers={"Authorization": f"Bearer {TOKEN}"}, timeout=30
-    )
+    try:
+        response = requests.post(
+            API_URL + path,
+            body,
+            headers={"Authorization": f"Bearer {TOKEN}"},
+            timeout=30,
+        )
 
-    return response.json().get("data")
+        return response.json().get("data")
+
+    except Exception as err:
+        log_message(f"ERROR :: {err}")
+        return {}
