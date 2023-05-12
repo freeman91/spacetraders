@@ -8,33 +8,26 @@ from ship import Ship, ShipCargo
 
 
 class PaymentMap:
-    on_accepted: str
-    on_fulfilled: str
-
     def __init__(self, **kwargs) -> None:
-        self.on_accepted = kwargs.get("onAccepted")
-        self.on_fulfilled = kwargs.get("onFulfilled")
+        self.on_accepted: str = kwargs.get("onAccepted")
+        self.on_fulfilled: str = kwargs.get("onFulfilled")
 
     def __repr__(self) -> str:
         return pformat(
             {
                 "on_accepted": self.on_accepted,
                 "on_fulfilled": self.on_fulfilled,
-            }
+            },
+            indent=8,
         )
 
 
 class DeliverMap:
-    destination_symbol: str
-    trade_symbol: str
-    units_fulfilled: int
-    units_required: int
-
     def __init__(self, **kwargs) -> None:
-        self.destination_symbol = kwargs.get("destinationSymbol")
-        self.trade_symbol = kwargs.get("tradeSymbol")
-        self.units_fulfilled = kwargs.get("unitsFulfilled")
-        self.units_required = kwargs.get("unitsRequired")
+        self.destination_symbol: str = kwargs.get("destinationSymbol")
+        self.trade_symbol: str = kwargs.get("tradeSymbol")
+        self.units_fulfilled: int = kwargs.get("unitsFulfilled")
+        self.units_required: int = kwargs.get("unitsRequired")
 
     def __repr__(self) -> str:
         return pformat(
@@ -43,19 +36,18 @@ class DeliverMap:
                 "trade_symbol": self.trade_symbol,
                 "units_fulfilled": self.units_fulfilled,
                 "units_required": self.units_required,
-            }
+            },
+            indent=8,
         )
 
 
 class Terms:
-    deadline: str
-    deliver: List[DeliverMap]
-    payment: dict
-
     def __init__(self, **kwargs) -> None:
-        self.deadline = kwargs.get("deadline")
-        self.deliver = [DeliverMap(**item) for item in kwargs.get("deliver")]
-        self.payment = PaymentMap(**kwargs.get("payment"))
+        self.deadline: str = kwargs.get("deadline")
+        self.deliver: List[DeliverMap] = [
+            DeliverMap(**item) for item in kwargs.get("deliver")
+        ]
+        self.payment: PaymentMap = PaymentMap(**kwargs.get("payment"))
 
     def __repr__(self) -> str:
         return pformat(
@@ -63,19 +55,12 @@ class Terms:
                 "deadline": self.deadline,
                 "deliver": self.deliver,
                 "payment": self.payment,
-            }
+            },
+            indent=4,
         )
 
 
 class Contract:
-    id_: str
-    type_: str
-    accepted: bool
-    expiration: str
-    faction: str
-    fulfilled: bool
-    terms: Terms
-
     def __repr__(self) -> str:
         return pformat(
             {
@@ -90,30 +75,31 @@ class Contract:
         )
 
     def __init__(self, **kwargs) -> None:
-        self.id_ = kwargs.get("id")
-        self.type_ = kwargs.get("type")
-        self.accepted = kwargs.get("accepted")
-        self.expiration = kwargs.get("expiration")
-        self.faction = kwargs.get("factionSymbol")
-        self.fulfilled = kwargs.get("fulfilled")
-        self.terms = Terms(**kwargs.get("terms"))
+        self.client_my_contracts: str = kwargs.get("client")
+        self.id_: str = kwargs.get("id")
+        self.type_: str = kwargs.get("type")
+        self.accepted: bool = kwargs.get("accepted")
+        self.expiration: str = kwargs.get("expiration")
+        self.faction: str = kwargs.get("factionSymbol")
+        self.fulfilled: bool = kwargs.get("fulfilled")
+        self.terms: Terms = Terms(**kwargs.get("terms"))
 
     def log(self, message: str) -> None:
         print(f"[{datetime.now().isoformat()[:19]}] :: {self.id_} :: {message}")
 
-    def fulfill(self, client):
-        result = client.my.contracts.fulfill(self.id_)
+    def fulfill(self):
+        result = self.client_my_contracts.fulfill(self.id_)
         pprint(result)
         return result
 
-    def deliver(self, client, ship: Ship):
+    def deliver(self, ship: Ship):
         trade_symbol = self.terms.deliver[0].trade_symbol
         stored_trade_good = find(
             ship.cargo.inventory,
             lambda good: good.symbol == trade_symbol,
         )
 
-        result = client.my.contracts.deliver(
+        result = self.client_my_contracts.deliver(
             ship.symbol, self.id_, trade_symbol, stored_trade_good.units
         )
 

@@ -3,11 +3,11 @@ from typing import List
 import inquirer
 from pydash import filter_, find
 
-from client import Client
 from contract import Contract
 from ship import Ship
 from system import System
 from waypoint import Waypoint
+from client import Client
 
 
 def resource(resources: List, resource_type: str):
@@ -31,9 +31,9 @@ def resource(resources: List, resource_type: str):
     return find(resources, lambda resource: resource["name"] == _resource).get("value")
 
 
-def contract(client: Client, fulfilled: bool = False) -> Contract:
+def contract(fulfilled: bool = False) -> Contract:
     contracts = filter_(
-        client.my.contracts.all(), lambda contract: contract.fulfilled is fulfilled
+        Client().my.contracts.all(), lambda contract: contract.fulfilled is fulfilled
     )
 
     contracts = [
@@ -44,28 +44,35 @@ def contract(client: Client, fulfilled: bool = False) -> Contract:
     return resource(contracts, "Contract")
 
 
-def ship(client: Client) -> Ship:
+def ship() -> Ship:
     ships = [
-        {"name": f"{ship.symbol}", "value": ship} for ship in client.my.ships.all()
+        {
+            "name": f"{ship.symbol} :: {ship.registration.role} :: \
+{ship.frame.symbol.replace('FRAME_', '')}",
+            "value": ship,
+        }
+        for ship in Client().my.ships.all()
     ]
     return resource(ships, "Ship")
 
 
-def system(client: Client) -> System:
+def system() -> System:
     systems = [
         {"name": f"{system.symbol} :: {system.type_}", "value": system}
-        for system in client.systems.all()
+        for system in Client().systems.all()
     ]
     return resource(systems, "System")
 
 
-def waypoint(client: Client, type_: str) -> Waypoint:
-    waypoints = filter_(
-        system(client).waypoints, lambda waypoint: waypoint.type_ == type_
-    )
+def waypoint(type_: str = None) -> Waypoint:
+    system_ = system()
+    waypoints = system_.waypoints
+    if type_:
+        waypoints = filter_(system_.waypoints, lambda waypoint: waypoint.type_ == type_)
 
     waypoints = [
         {"name": f"{waypoint.symbol} :: {waypoint.type_}", "value": waypoint}
         for waypoint in waypoints
     ]
-    return resource(waypoints, "System")
+    waypoint_ = resource(waypoints, "System")
+    return Client().systems.waypoints.get(system_.symbol, waypoint_.symbol)

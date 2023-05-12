@@ -6,11 +6,6 @@ from typing import List
 
 
 class SystemWaypoint:
-    symbol: str
-    type_: str
-    x: int
-    y: int
-
     def __repr__(self) -> str:
         return pformat(
             {
@@ -18,24 +13,28 @@ class SystemWaypoint:
                 "type_": self.type_,
                 "x": self.x,
                 "y": self.y,
-            }
+            },
+            indent=4,
         )
 
     def __init__(self, **kwargs):
-        self.symbol = kwargs.get("symbol")
-        self.type_ = kwargs.get("type")
-        self.x = kwargs.get("x")
-        self.y = kwargs.get("y")
+        self.symbol: str = kwargs.get("symbol")
+        self.type_: str = kwargs.get("type")
+        self.x: int = kwargs.get("x")
+        self.y: int = kwargs.get("y")
 
 
 class System:
-    symbol: str
-    type_: str
-    factions: List
-    sector_symbol: str
-    waypoints: List
-    x: int
-    y: int
+    def __init__(self, **kwargs):
+        self.symbol: str = kwargs.get("symbol")
+        self.type_: str = kwargs.get("type")
+        self.factions: List[str] = kwargs.get("factions")
+        self.sector_symbol: str = kwargs.get("sectorSymbol")
+        self.waypoints: List[SystemWaypoint] = [
+            SystemWaypoint(**waypoint) for waypoint in kwargs.get("waypoints", [])
+        ]
+        self.x: int = kwargs.get("x")
+        self.y: int = kwargs.get("ymbol")
 
     def __repr__(self) -> str:
         return pformat(
@@ -49,17 +48,6 @@ class System:
                 "y": self.y,
             }
         )
-
-    def __init__(self, **kwargs):
-        self.symbol = kwargs.get("symbol")
-        self.type_ = kwargs.get("type")
-        self.factions = kwargs.get("factions")
-        self.sector_symbol = kwargs.get("sectorSymbol")
-        self.waypoints = [
-            SystemWaypoint(**waypoint) for waypoint in kwargs.get("waypoints", [])
-        ]
-        self.x = kwargs.get("x")
-        self.y = kwargs.get("ymbol")
 
     def distance(self, destination):
         return math.sqrt((destination.x - self.x) ** 2 + (destination.y - self.x) ** 2)

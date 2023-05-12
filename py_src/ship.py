@@ -9,42 +9,36 @@ from pydash import filter_
 
 
 class ShipNavRouteWaypoint:
-    symbol: str
-    system_symbol: str
-    type: str
-    x: int
-    y: int
-
     def __init__(self, **kwargs) -> None:
-        self.symbol = kwargs.get("symbol")
-        self.system_symbol = kwargs.get("system_symbol")
-        self.type = kwargs.get("type")
-        self.x = kwargs.get("x")
-        self.y = kwargs.get("y")
+        self.symbol: str = kwargs.get("symbol")
+        self.system_symbol: str = kwargs.get("systemSymbol")
+        self.type_: str = kwargs.get("type")
+        self.x: int = kwargs.get("x")
+        self.y: int = kwargs.get("y")
 
     def __repr__(self) -> str:
         return pformat(
             {
                 "symbol": self.symbol,
                 "system_symbol": self.system_symbol,
-                "type": self.type,
+                "type_": self.type_,
                 "x": self.x,
                 "y": self.y,
-            }
+            },
+            indent=8,
         )
 
 
 class ShipNavRoute:
-    arrival: str
-    departure: ShipNavRouteWaypoint
-    departure_time: str
-    destination: ShipNavRouteWaypoint
-
     def __init__(self, **kwargs) -> None:
-        self.arrival = kwargs.get("arrival")
-        self.departure = ShipNavRouteWaypoint(**kwargs.get("departure"))
-        self.departure_time = kwargs.get("departureTime")
-        self.destination = ShipNavRouteWaypoint(**kwargs.get("destination"))
+        self.arrival: str = kwargs.get("arrival")
+        self.departure: ShipNavRouteWaypoint = ShipNavRouteWaypoint(
+            **kwargs.get("departure")
+        )
+        self.departure_time: str = kwargs.get("departureTime")
+        self.destination: ShipNavRouteWaypoint = ShipNavRouteWaypoint(
+            **kwargs.get("destination")
+        )
 
     def __repr__(self) -> str:
         return pformat(
@@ -53,23 +47,18 @@ class ShipNavRoute:
                 "departure": self.departure,
                 "departure_time": self.departure_time,
                 "destination": self.destination,
-            }
+            },
+            indent=8,
         )
 
 
 class ShipNav:
-    flight_mode: str
-    route: ShipNavRoute
-    status: str
-    system_symbol: str
-    waypoint_symbol: str
-
     def __init__(self, **kwargs) -> None:
-        self.flight_mode = kwargs.get("flightMode")
-        self.route = ShipNavRoute(**kwargs.get("route"))
-        self.status = kwargs.get("status")
-        self.system_symbol = kwargs.get("systemSymbol")
-        self.waypoint_symbol = kwargs.get("waypointSymbol")
+        self.flight_mode: str = kwargs.get("flightMode")
+        self.route: ShipNavRoute = ShipNavRoute(**kwargs.get("route"))
+        self.status: str = kwargs.get("status")
+        self.system_symbol: str = kwargs.get("systemSymbol")
+        self.waypoint_symbol: str = kwargs.get("waypointSymbol")
 
     def __repr__(self) -> str:
         return pformat(
@@ -79,21 +68,17 @@ class ShipNav:
                 "status": self.status,
                 "system_symbol": self.system_symbol,
                 "waypoint_symbol": self.waypoint_symbol,
-            }
+            },
+            indent=4,
         )
 
 
 class ShipCargoInventoryItem:
-    symbol: str
-    name: str
-    description: str
-    units: int
-
     def __init__(self, **kwargs) -> None:
-        self.symbol = kwargs.get("symbol")
-        self.name = kwargs.get("name")
-        self.description = kwargs.get("description")
-        self.units = kwargs.get("units")
+        self.symbol: str = kwargs.get("symbol")
+        self.name: str = kwargs.get("name")
+        self.description: str = kwargs.get("description")
+        self.units: int = kwargs.get("units")
 
     def __repr__(self) -> str:
         return pformat(
@@ -102,19 +87,16 @@ class ShipCargoInventoryItem:
                 "name": self.name,
                 "description": self.description,
                 "units": self.units,
-            }
+            },
+            indent=8,
         )
 
 
 class ShipCargo:
-    capacity: int
-    units: int
-    inventory: List[ShipCargoInventoryItem]
-
     def __init__(self, **kwargs) -> None:
-        self.capacity = kwargs.get("capacity")
-        self.units = kwargs.get("units")
-        self.inventory = [
+        self.capacity: int = kwargs.get("capacity")
+        self.units: int = kwargs.get("units")
+        self.inventory: List[ShipCargoInventoryItem] = [
             ShipCargoInventoryItem(**item) for item in kwargs.get("inventory")
         ]
 
@@ -124,26 +106,19 @@ class ShipCargo:
                 "capacity": self.capacity,
                 "units": self.units,
                 "inventory": self.inventory,
-            }
+            },
+            indent=4,
         )
 
 
 class ShipCrew:
-    capacity: int
-    current: int
-    morale: int
-    required: int
-    rotation: str
-    wages: int
-
     def __init__(self, **kwargs) -> None:
-        self.capacity = kwargs.get("capacity")
-        self.current = kwargs.get("current")
-        self.morale = kwargs.get("morale")
-        self.morale = kwargs.get("morale")
-        self.required = kwargs.get("required")
-        self.rotation = kwargs.get("rotation")
-        self.wages = kwargs.get("wages")
+        self.capacity: int = kwargs.get("capacity")
+        self.current: int = kwargs.get("current")
+        self.morale: int = kwargs.get("morale")
+        self.required: int = kwargs.get("required")
+        self.rotation: str = kwargs.get("rotation")
+        self.wages: int = kwargs.get("wages")
 
     def __repr__(self) -> str:
         return pformat(
@@ -154,19 +129,16 @@ class ShipCrew:
                 "required": self.required,
                 "rotation": self.rotation,
                 "wages": self.wages,
-            }
+            },
+            indent=4,
         )
 
 
 class ShipFuel:
-    capacity: int
-    consumed: dict
-    current: int
-
     def __init__(self, **kwargs) -> None:
-        self.capacity = kwargs.get("capacity")
-        self.consumed = kwargs.get("consumed")
-        self.current = kwargs.get("current")
+        self.capacity: int = kwargs.get("capacity")
+        self.consumed: dict = kwargs.get("consumed")
+        self.current: int = kwargs.get("current")
 
     def __repr__(self) -> str:
         return pformat(
@@ -174,29 +146,21 @@ class ShipFuel:
                 "capacity": self.capacity,
                 "consumed": self.consumed,
                 "current": self.current,
-            }
+            },
+            indent=4,
         )
 
 
 class ShipFrame:
-    symbol: str
-    name: str
-    condition: int
-    description: str
-    fuel_capacity: int
-    module_slots: int
-    mounting_points: int
-    requirements: dict
-
     def __init__(self, **kwargs) -> None:
-        self.symbol = kwargs.get("symbol")
-        self.name = kwargs.get("name")
-        self.condition = kwargs.get("condition")
-        self.description = kwargs.get("description")
-        self.fuel_capacity = kwargs.get("fuelCapacity")
-        self.module_slots = kwargs.get("moduleSlots")
-        self.mounting_points = kwargs.get("mountingPoints")
-        self.requirements = kwargs.get("requirements")
+        self.symbol: str = kwargs.get("symbol")
+        self.name: str = kwargs.get("name")
+        self.condition: int = kwargs.get("condition")
+        self.description: str = kwargs.get("description")
+        self.fuel_capacity: int = kwargs.get("fuelCapacity")
+        self.module_slots: int = kwargs.get("moduleSlots")
+        self.mounting_points: int = kwargs.get("mountingPoints")
+        self.requirements: dict = kwargs.get("requirements")
 
     def __repr__(self) -> str:
         return pformat(
@@ -209,25 +173,19 @@ class ShipFrame:
                 "module_slots": self.module_slots,
                 "mounting_points": self.mounting_points,
                 "requirements": self.requirements,
-            }
+            },
+            indent=4,
         )
 
 
 class ShipReactor:
-    symbol: str
-    name: str
-    condition: int
-    description: str
-    power_output: int
-    requirements: dict
-
     def __init__(self, **kwargs) -> None:
-        self.symbol = kwargs.get("symbol")
-        self.name = kwargs.get("name")
-        self.condition = kwargs.get("condition")
-        self.description = kwargs.get("description")
-        self.power_output = kwargs.get("powerOutput")
-        self.requirements = kwargs.get("requirements")
+        self.symbol: str = kwargs.get("symbol")
+        self.name: str = kwargs.get("name")
+        self.condition: int = kwargs.get("condition")
+        self.description: str = kwargs.get("description")
+        self.power_output: int = kwargs.get("powerOutput")
+        self.requirements: dict = kwargs.get("requirements")
 
     def __repr__(self) -> str:
         return pformat(
@@ -238,25 +196,19 @@ class ShipReactor:
                 "description": self.description,
                 "power_output": self.power_output,
                 "requirements": self.requirements,
-            }
+            },
+            indent=4,
         )
 
 
 class ShipEngine:
-    symbol: str
-    name: str
-    condition: int
-    description: str
-    speed: int
-    requirements: dict
-
     def __init__(self, **kwargs) -> None:
-        self.symbol = kwargs.get("symbol")
-        self.name = kwargs.get("name")
-        self.condition = kwargs.get("condition")
-        self.description = kwargs.get("description")
-        self.speed = kwargs.get("speed")
-        self.requirements = kwargs.get("requirements")
+        self.symbol: str = kwargs.get("symbol")
+        self.name: str = kwargs.get("name")
+        self.condition: int = kwargs.get("condition")
+        self.description: str = kwargs.get("description")
+        self.speed: int = kwargs.get("speed")
+        self.requirements: dict = kwargs.get("requirements")
 
     def __repr__(self) -> str:
         return pformat(
@@ -267,23 +219,18 @@ class ShipEngine:
                 "description": self.description,
                 "speed": self.speed,
                 "requirements": self.requirements,
-            }
+            },
+            indent=4,
         )
 
 
 class ShipModule:
-    name: str
-    symbol: str
-    capacity: int
-    description: str
-    requirements: dict
-
     def __init__(self, **kwargs) -> None:
-        self.name = kwargs.get("name")
-        self.symbol = kwargs.get("symbol")
-        self.capacity = kwargs.get("capacity")
-        self.description = kwargs.get("description")
-        self.requirements = kwargs.get("requirements")
+        self.name: str = kwargs.get("name")
+        self.symbol: str = kwargs.get("symbol")
+        self.capacity: int = kwargs.get("capacity")
+        self.description: str = kwargs.get("description")
+        self.requirements: dict = kwargs.get("requirements")
 
     def __repr__(self) -> str:
         return pformat(
@@ -293,23 +240,18 @@ class ShipModule:
                 "capacity": self.capacity,
                 "description": self.description,
                 "requirements": self.requirements,
-            }
+            },
+            indent=8,
         )
 
 
 class ShipMount:
-    name: str
-    symbol: str
-    description: str
-    requirements: dict
-    strength: int
-
     def __init__(self, **kwargs) -> None:
-        self.name = kwargs.get("name")
-        self.symbol = kwargs.get("symbol")
-        self.description = kwargs.get("description")
-        self.requirements = kwargs.get("requirements")
-        self.strength = kwargs.get("strength")
+        self.name: str = kwargs.get("name")
+        self.symbol: str = kwargs.get("symbol")
+        self.description: str = kwargs.get("description")
+        self.requirements: dict = kwargs.get("requirements")
+        self.strength: int = kwargs.get("strength")
 
     def __repr__(self) -> str:
         return pformat(
@@ -319,7 +261,8 @@ class ShipMount:
                 "description": self.description,
                 "requirements": self.requirements,
                 "strength": self.strength,
-            }
+            },
+            indent=8,
         )
 
 
@@ -339,23 +282,12 @@ class ShipRegistration:
                 "faction_symbol": self.faction_symbol,
                 "name": self.name,
                 "role": self.role,
-            }
+            },
+            indent=4,
         )
 
 
 class Ship:
-    symbol: str
-    nav: ShipNav
-    cargo: ShipCargo
-    crew: ShipCrew
-    fuel: ShipFuel
-    frame: ShipFrame
-    reactor: ShipReactor
-    engine: ShipEngine
-    modules: List[ShipModule]
-    mounts: List[ShipMount]
-    registration: ShipRegistration
-
     def __repr__(self) -> str:
         return pformat(
             {
@@ -374,75 +306,76 @@ class Ship:
         )
 
     def __init__(self, **kwargs):
-        self.symbol = kwargs.get("symbol")
-        self.nav = ShipNav(**kwargs.get("nav"))
-        self.cargo = ShipCargo(**kwargs.get("cargo"))
-        self.crew = ShipCrew(**kwargs.get("crew"))
-        self.fuel = ShipFuel(**kwargs.get("fuel"))
-        self.frame = ShipFrame(**kwargs.get("frame"))
-        self.reactor = ShipReactor(**kwargs.get("reactor"))
-        self.engine = ShipEngine(**kwargs.get("engine"))
-        self.modules = [ShipModule(**module) for module in kwargs.get("modules", [])]
-        self.mounts = [ShipMount(**mount) for mount in kwargs.get("mounts", [])]
-        self.registration = ShipRegistration(**kwargs.get("registration"))
+        self.client_my_ships = kwargs.get("client")
+        self.symbol: str = kwargs.get("symbol")
+        self.nav: ShipNav = ShipNav(**kwargs.get("nav"))
+        self.cargo: ShipCargo = ShipCargo(**kwargs.get("cargo"))
+        self.crew: ShipCrew = ShipCrew(**kwargs.get("crew"))
+        self.fuel: ShipFuel = ShipFuel(**kwargs.get("fuel"))
+        self.frame: ShipFrame = ShipFrame(**kwargs.get("frame"))
+        self.reactor: ShipReactor = ShipReactor(**kwargs.get("reactor"))
+        self.engine: ShipEngine = ShipEngine(**kwargs.get("engine"))
+        self.modules: List[ShipModule] = [
+            ShipModule(**module) for module in kwargs.get("modules", [])
+        ]
+        self.mounts: List[ShipMount] = [
+            ShipMount(**mount) for mount in kwargs.get("mounts", [])
+        ]
+        self.registration: ShipRegistration = ShipRegistration(
+            **kwargs.get("registration")
+        )
 
     def log(self, message: str) -> None:
         print(f"[{datetime.now().isoformat()[:19]}] :: {self.symbol} :: {message}")
 
-    def get_nav(self, client):
-        nav = client.my.ships.nav(self.symbol)
+    def get_nav(self):
+        nav = self.client_my_ships.nav(self.symbol)
         self.nav = nav
         return nav
 
-    def get_cargo(self, client):
-        cargo = client.my.ships.cargo(self.symbol)
+    def get_cargo(self):
+        cargo = self.client_my_ships.cargo(self.symbol)
         if cargo:
             self.cargo = cargo
             sleep(0.5)
 
         return cargo
 
-    def dock(self, client):
-        nav = client.my.ships.dock(self.symbol)
+    def dock(self):
+        nav = self.client_my_ships.dock(self.symbol)
         if nav:
             self.log(f"docked at {nav.waypoint_symbol}")
             return nav
 
         sleep(5)
-        return self.dock(client)
+        return self.dock()
 
-    def orbit(self, client):
-        nav = client.my.ships.orbit(self.symbol)
+    def orbit(self):
+        nav = self.client_my_ships.orbit(self.symbol)
         if nav:
             self.log(f"orbiting {nav.waypoint_symbol}")
             return nav
 
         sleep(5)
-        return self.orbit(client)
+        return self.orbit()
 
-    def navigate(self, client, waypoint_symbol: str):
-        result = client.my.ships.navigate(self.symbol, waypoint_symbol)
+    def navigate(self, waypoint_symbol: str):
+        result = self.client_my_ships.navigate(self.symbol, waypoint_symbol)
 
         self.nav = ShipNav(**result.get("nav"))
         self.fuel = ShipFuel(**result.get("fuel"))
         self.log(f"in transit to {self.nav.route.destination.symbol}")
 
-        # TODO: subtract now from arrival to get seconds
+        arrival = datetime.strptime(self.nav.route.arrival, "%Y-%m-%dT%H:%M:%S.%fZ")
+        now = datetime.utcnow()
 
-        wait = 50
-
-        if self.engine.symbol == "ENGINE_ION_DRIVE_I":
-            wait = 35
-        elif self.engine.symbol == "ENGINE_ION_DRIVE_II":
-            wait = 25
-
+        wait = (arrival - now).seconds
         self.log(f". . . Waiting {wait} seconds")
         sleep(wait)
-
         return self.nav
 
-    def extract(self, client):
-        result = client.my.ships.extract(self.symbol)
+    def extract(self):
+        result = self.client_my_ships.extract(self.symbol)
 
         cooldown = result.get("cooldown")
         extraction = result.get("extraction")
@@ -454,27 +387,25 @@ class Ship:
         self.log(f"Cooldown . . . Wait {wait} seconds")
         sleep(wait)
 
-    def cooldown(self, client):
-        result = client.my.ships.cooldown(self.symbol)
+    def cooldown(self):
+        result = self.client_my_ships.cooldown(self.symbol)
         if result != {}:
             remaining = result.get("remainingSeconds")
             return f"{remaining} seconds remaining"
 
         return "ready for extraction"
 
-    def survey(self, client):
-        survey = client.my.ships.survey(self.symbol)
+    def survey(self):
+        survey = self.client_my_ships.survey(self.symbol)
         pprint(survey)
         return survey
 
-    def refuel(self, client, agent):
-        result = client.my.ships.refuel(self.symbol)
+    def refuel(self):
+        result = self.client_my_ships.refuel(self.symbol)
         self.fuel = ShipFuel(**result.get("fuel"))
-        agent.credits = result.get("agent").get("credits")
-
         self.log("refueled")
 
-    def sell(self, client, agent, contract):
+    def sell(self, contract):
         sellable_goods = filter_(
             self.cargo.inventory,
             lambda trade_good: trade_good.symbol
@@ -486,7 +417,7 @@ class Ship:
 
         result = None
         for good in sellable_goods:
-            result = client.my.ships.sell(self.symbol, good.symbol, good.units)
+            result = self.client_my_ships.sell(self.symbol, good.symbol, good.units)
             transaction = result["transaction"]
             response = {
                 "symbol": transaction.get("tradeSymbol"),
@@ -497,8 +428,11 @@ class Ship:
 
             self.log(f"sold: {pformat(response)}")
 
-        agent.credits = result.get("agent", {}).get("credits")
         self.cargo = ShipCargo(**result.get("cargo"))
 
         sleep(0.5)
         return result["transaction"]
+
+    def purchase(self, ship_type: str, waypoint):
+        result = self.client_my_ships.purchase(ship_type, waypoint.symbol)
+        pprint(result.get("transaction"))

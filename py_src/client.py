@@ -10,20 +10,19 @@ from agent import Agent
 from contract import Contract
 from ship import Ship, ShipCargo, ShipNav
 from system import System
+from waypoint import Waypoint
+
 
 load_dotenv()
 
-TOKEN = os.getenv("TOKEN")
+TOKEN: str = os.getenv("TOKEN")
 BASE_URL: str = "https://api.spacetraders.io/v2/"
 
 
 class ClientMeta:
-    token: str
-    base_url: str
-
     def __init__(self, token: str = TOKEN, base_url: str = BASE_URL):
-        self.token = token
-        self.base_url = base_url
+        self.token: str = token
+        self.base_url: str = base_url
 
     def get_request(self, path: str, log: bool = False):
         try:
@@ -88,7 +87,10 @@ class WaypointsClient(ClientMeta):
         return self.get_request(f"systems/{system_symbol}/waypoints")
 
     def get(self, system_symbol: str, waypoint_symbol: str):
-        return self.get_request(f"systems/{system_symbol}/waypoints/{waypoint_symbol}")
+        return Waypoint(
+            **self.get_request(f"systems/{system_symbol}/waypoints/{waypoint_symbol}"),
+            client=self,
+        )
 
     def market(self, system_symbol: str, waypoint_symbol: str):
         return self.get_request(
@@ -107,11 +109,9 @@ class WaypointsClient(ClientMeta):
 
 
 class SystemsClient(ClientMeta):
-    waypoints: WaypointsClient
-
     def __init__(self):
         super().__init__()
-        self.waypoints = WaypointsClient()
+        self.waypoints: WaypointsClient = WaypointsClient()
 
     def all(self):
         return [System(**system) for system in self.get_request("systems")]
@@ -125,10 +125,10 @@ class MyShipsClient(ClientMeta):
         super().__init__()
 
     def all(self):
-        return [Ship(**ship) for ship in self.get_request("my/ships")]
+        return [Ship(**ship, client=self) for ship in self.get_request("my/ships")]
 
     def get(self, ship_symbol: str):
-        return Ship(**self.get_request(f"my/ships/{ship_symbol}"))
+        return Ship(**self.get_request(f"my/ships/{ship_symbol}"), client=self)
 
     def cargo(self, ship_symbol: str):
         return ShipCargo(**self.get_request(f"my/ships/{ship_symbol}/cargo"))
@@ -173,7 +173,8 @@ class MyShipsClient(ClientMeta):
 
     def navigate(self, ship_symbol: str, waypoint_symbol: str):
         return self.post_request(
-            f"my/ships/{ship_symbol}/navigate", {"waypointSymbol": waypoint_symbol}
+            f"my/ships/{ship_symbol}/navigate",
+            {"waypointSymbol": waypoint_symbol},
         )
 
     def warp(self, ship_symbol: str):
@@ -185,9 +186,10 @@ class MyShipsClient(ClientMeta):
             {"symbol": trade_symbol, "units": int(units)},
         )
 
-    def purchase(self, ship_type: str, waypoint: str):
+    def purchase(self, ship_type: str, waypoint_symbol: str):
         return self.post_request(
-            "my/ships", {"shipType": ship_type, "waypointSymbol": waypoint}
+            "my/ships",
+            {"shipType": ship_type, "waypointSymbol": waypoint_symbol},
         )
 
     def scan_systems(self, ship_symbol: str):
@@ -219,10 +221,13 @@ class MyContractsClient(ClientMeta):
         super().__init__()
 
     def all(self):
-        return [Contract(**contract) for contract in self.get_request("my/contracts")]
+        return [
+            Contract(**contract, client=self)
+            for contract in self.get_request("my/contracts")
+        ]
 
     def get(self, contract_id: str):
-        return Contract(**self.get_request(f"my/contracts/{contract_id}"))
+        return Contract(**self.get_request(f"my/contracts/{contract_id}"), client=self)
 
     def accept(self, contract_id: str):
         return self.post_request(f"my/contracts/{contract_id}/accept")
@@ -246,25 +251,18 @@ class MyContractsClient(ClientMeta):
 
 
 class MyClient(ClientMeta):
-    ships: MyShipsClient
-    contracts: MyContractsClient
-
     def __init__(self):
         super().__init__()
-        self.ships = MyShipsClient()
-        self.contracts = MyContractsClient()
+        self.ships: MyShipsClient = MyShipsClient()
+        self.contracts: MyContractsClient = MyContractsClient()
 
     def agent(self):
         return Agent(**self.get_request("my/agent"))
 
 
 class Client(ClientMeta):
-    my: MyClient
-    factions: FactionsClient
-    systems: SystemsClient
-
     def __init__(self):
         super().__init__()
-        self.my = MyClient()
-        self.factions = FactionsClient()
-        self.systems = SystemsClient()
+        self.my: MyClient = MyClient()
+        self.factions: FactionsClient = FactionsClient()
+        self.systems: SystemsClient = SystemsClient()

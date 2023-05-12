@@ -1,31 +1,29 @@
 from datetime import datetime
+from pprint import pprint
 from time import sleep
 
 from pydash import find
 
 import prompts
-from agent import Agent
 from client import Client
 from contract import Contract
 from ship import Ship
 from waypoint import Waypoint
 
 
-def extract_and_sell(
-    client: Client, agent: Agent, ship: Ship, contract: Contract, threshold: int = 30
-):
+def extract_and_sell(ship: Ship, contract: Contract, threshold: int = 20):
     while True:
         log_message(
             f"{ship.symbol} :: Cargo: {ship.cargo.units} / {ship.cargo.capacity}"
         )
 
         if ship.cargo.units < ship.cargo.capacity:
-            ship.extract(client)
+            ship.extract()
 
         else:
-            ship.dock(client)
-            ship.sell(client, agent, contract)
-            ship.orbit(client)
+            ship.dock()
+            ship.sell(contract)
+            ship.orbit()
 
         contract_good = find(
             ship.cargo.inventory,
@@ -35,33 +33,31 @@ def extract_and_sell(
             break
 
 
-def extract_loop(
-    client: Client, agent: Agent, ship: Ship, contract: Contract, waypoint: Waypoint
-):
+def extract_loop(ship: Ship, contract: Contract, waypoint: Waypoint):
     while True:
         # 1: Orbiting _waypooint
         if ship.nav.status == "DOCKED":
-            ship.orbit(client)
+            ship.orbit()
 
         elif ship.nav.status == "IN_TRANSIT":
             sleep(30)
 
         if ship.nav.waypoint_symbol != waypoint.symbol:
-            ship.navigate(client, waypoint.symbol)
+            ship.navigate(waypoint.symbol)
 
         # 2: Extract and sell until have enough _contract trade
-        extract_and_sell(client, agent, ship, contract)
+        extract_and_sell(ship, contract)
 
         # 4: Navigate to planet
-        ship.navigate(client, contract.terms.deliver[0].destination_symbol)
-        ship.dock(client)
+        ship.navigate(contract.terms.deliver[0].destination_symbol)
+        ship.dock()
 
         # 5: Deliver trade goods in contract
-        contract.deliver(client, ship)
+        contract.deliver(ship)
 
         # 6: Refuel
-        ship.refuel(client, agent)
-        ship.orbit(client)
+        ship.refuel()
+        ship.orbit()
 
 
 def log_message(message: str):
@@ -69,16 +65,15 @@ def log_message(message: str):
 
 
 def setup_extraction_loop():
-    client = Client()
-    agent = client.my.agent()
     log_message("Setup Extraction Loop...")
 
-    ship = prompts.ship(client)
-    contract = prompts.contract(client)
-    waypoint = prompts.waypoint(client, "ASTEROID_FIELD")
+    ship = prompts.ship()
+    contract = prompts.contract()
+    waypoint = prompts.waypoint("ASTEROID_FIELD")
 
-    extract_loop(client, agent, ship, contract, waypoint)
+    extract_loop(ship, contract, waypoint)
 
 
 if __name__ == "__main__":
-    pass
+    agent = Client().my.agent()
+    pprint(agent)

@@ -6,15 +6,6 @@ from typing import List
 
 
 class Waypoint:
-    symbol: str
-    system_symbol: str
-    type_: str
-    faction: str
-    orbitals: List
-    traits: List
-    x: int
-    y: int
-
     def __repr__(self) -> str:
         return pformat(
             {
@@ -30,22 +21,23 @@ class Waypoint:
         )
 
     def __init__(self, **kwargs):
-        self.symbol = kwargs.get("symbolx")
-        self.system_symbol = kwargs.get("system_symbol")
-        self.type_ = kwargs.get("type")
-        self.faction = kwargs.get("faction")
-        self.orbitals = kwargs.get("orbitals")
-        self.traits = kwargs.get("traits")
-        self.x = kwargs.get("x")
-        self.y = kwargs.get("y")
+        self.client_systems_waypoints = kwargs.get("client")
+        self.symbol: str = kwargs.get("symbol")
+        self.system_symbol: str = kwargs.get("systemSymbol")
+        self.type_: str = kwargs.get("type")
+        self.faction: str = kwargs.get("faction")
+        self.orbitals: List = kwargs.get("orbitals")
+        self.traits: List = kwargs.get("traits")
+        self.x: int = kwargs.get("x")
+        self.y: int = kwargs.get("y")
 
-    def market(self, client):
-        result = client.systems.waypoints.market(self.system_symbol, self.symbol)
+    def market(self):
+        result = self.client_systems_waypoints.market(self.system_symbol, self.symbol)
         pprint(result)
         return result
 
-    def shipyard(self, client):
-        result = client.systems.waypoints.shipyard(self.system_symbol, self.symbol)
+    def shipyard(self):
+        result = self.client_systems_waypoints.shipyard(self.system_symbol, self.symbol)
         pprint(result)
         return result
 
