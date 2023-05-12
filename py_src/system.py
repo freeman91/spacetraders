@@ -1,20 +1,41 @@
+# pylint: disable=C0103
 
 import math
-from pprint import pformat, pprint
+from pprint import pformat
 from typing import List
 
-from client import Client
-from waypoint import Waypoint
+
+class SystemWaypoint:
+    symbol: str
+    type_: str
+    x: int
+    y: int
+
+    def __repr__(self) -> str:
+        return pformat(
+            {
+                "symbol": self.symbol,
+                "type_": self.type_,
+                "x": self.x,
+                "y": self.y,
+            }
+        )
+
+    def __init__(self, **kwargs):
+        self.symbol = kwargs.get("symbol")
+        self.type_ = kwargs.get("type")
+        self.x = kwargs.get("x")
+        self.y = kwargs.get("y")
 
 
-class System(Client):
+class System:
     symbol: str
     type_: str
     factions: List
     sector_symbol: str
     waypoints: List
-    x_coord: int
-    y_coord: int
+    x: int
+    y: int
 
     def __repr__(self) -> str:
         return pformat(
@@ -24,24 +45,21 @@ class System(Client):
                 "factions": self.factions,
                 "sector_symbol": self.sector_symbol,
                 "waypoints": self.waypoints,
-                "x_coord": self.x_coord,
-                "y_coord": self.y_coord,
+                "x": self.x,
+                "y": self.y,
             }
         )
 
     def __init__(self, **kwargs):
-        pprint(kwargs)
-    #     result = get_request(f"systems/{symbol}")
-    #     self.symbol = result.get("symbol")
-    #     self.type_ = result.get("type")
-    #     self.factions = result.get("factions")
-    #     self.sector_symbol = result.get("sectorSymbol")
-    #     self.waypoints = result.get("waypoints")
-    #     self.x_coord = result.get("x")
-    #     self.y_coord = result.get("y")
+        self.symbol = kwargs.get("symbol")
+        self.type_ = kwargs.get("type")
+        self.factions = kwargs.get("factions")
+        self.sector_symbol = kwargs.get("sectorSymbol")
+        self.waypoints = [
+            SystemWaypoint(**waypoint) for waypoint in kwargs.get("waypoints", [])
+        ]
+        self.x = kwargs.get("x")
+        self.y = kwargs.get("ymbol")
 
-    # def get_waypoint_idx(self, idx):
-    #     return Waypoint(self.waypoints[idx].get("symbol"))
-
-    # def distance(self, destination):
-    #     return math.sqrt((destination.x_coord - self.x_coord)**2 + (destination.y_coord - self.x_coord)**2)
+    def distance(self, destination):
+        return math.sqrt((destination.x - self.x) ** 2 + (destination.y - self.x) ** 2)

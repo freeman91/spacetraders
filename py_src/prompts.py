@@ -1,127 +1,71 @@
-import inquirer
-from pydash import map_, filter_
+from typing import List
 
-from agent import Agent
+import inquirer
+from pydash import filter_, find
+
+from client import Client
 from contract import Contract
 from ship import Ship
 from system import System
 from waypoint import Waypoint
 
 
-def contract(client) -> Contract:
-    """
-    Select a contract.
+def resource(resources: List, resource_type: str):
+    if len(resources) == 1:
+        return resources[0].get("value")
 
-    :param agent: Agent to use.
-    :return: Contract instance
-    """
+    _resource = inquirer.prompt(
+        [
+            inquirer.List(
+                "RESOURCE",
+                message=f"Select {resource_type}",
+                choices=[resource["name"] for resource in resources],
+                carousel=True,
+            )
+        ]
+    ).get("RESOURCE")
 
-    # agent = agent or Agent()
+    if not _resource:
+        raise ValueError(f"You must select a {resource_type}")
 
-    # contracts = filter_(agent.contracts(), lambda contract: contract.get("fulfilled") is fulfilled)
-    # contract_ids = map_(contracts, lambda contract: contract.get("id"))
-
-    # if len(contract_ids) == 0:
-    #     return None
-
-    # if len(contract_ids) == 1:
-    #     return Contract(contract_ids[0])
-
-    # contract_id = inquirer.prompt(
-    #     [
-    #         inquirer.List(
-    #             "contract",
-    #             message="Select a contract",
-    #             choices=contract_ids,
-    #         ),
-    #     ]
-    # ).get("contract")
-
-    # return Contract(contract_id)
+    return find(resources, lambda resource: resource["name"] == _resource).get("value")
 
 
-# def ship(agent: Agent = None) -> Ship:
-#     """
-#     Select a ship.
+def contract(client: Client, fulfilled: bool = False) -> Contract:
+    contracts = filter_(
+        client.my.contracts.all(), lambda contract: contract.fulfilled is fulfilled
+    )
 
-#     :param agent: Agent to use.
-#     :return: Ship instance
-#     """
+    contracts = [
+        {"name": f"{contract.faction} [{contract.id_}]", "value": contract}
+        for contract in contracts
+    ]
 
-#     agent = agent or Agent()
-
-#     ship_names = map_(agent.get_ships(), lambda ship: ship.get("symbol"))
-#     ship_name = inquirer.prompt(
-#         [
-#             inquirer.List(
-#                 "ship",
-#                 message="Select a ship",
-#                 choices=ship_names,
-#             ),
-#         ]
-#     ).get("ship")
-
-#     return Ship(ship_name)
+    return resource(contracts, "Contract")
 
 
-# def system(agent: Agent = None) -> System:
-#     """
-#     Select a system.
-
-#     :param agent: Agent to use.
-#     :return: System instance
-#     """
-
-#     agent = agent or Agent()
-
-#     systems = map_(
-#         agent.systems(),
-#         lambda system: f"{system.get('symbol')}: {system.get('type')}",
-#     )
-#     system_name = inquirer.prompt(
-#         [
-#             inquirer.List(
-#                 "system",
-#                 message="Select a system",
-#                 choices=systems,
-#             ),
-#         ]
-#     ).get("system")
-
-#     return System(system_name.split(":")[0])
+def ship(client: Client) -> Ship:
+    ships = [
+        {"name": f"{ship.symbol}", "value": ship} for ship in client.my.ships.all()
+    ]
+    return resource(ships, "Ship")
 
 
-# def waypoint(agent: Agent = None, _type: str = None) -> Waypoint:
-#     """
-#     Select a waypoint.
+def system(client: Client) -> System:
+    systems = [
+        {"name": f"{system.symbol} :: {system.type_}", "value": system}
+        for system in client.systems.all()
+    ]
+    return resource(systems, "System")
 
-#     :param agent: Agent to use.
-#     :return: Waypoint instance
-#     """
 
-#     agent = agent or Agent()
+def waypoint(client: Client, type_: str) -> Waypoint:
+    waypoints = filter_(
+        system(client).waypoints, lambda waypoint: waypoint.type_ == type_
+    )
 
-#     _system = system(agent)
-
-#     waypoint_symbols = map_(
-#         _system.waypoints,
-#         lambda waypoint: f"{waypoint.get('symbol')}: {waypoint.get('type')}",
-#     )
-
-#     if _type:
-#         waypoint_symbols = filter_(
-#             waypoint_symbols,
-#             lambda waypoint: _type in waypoint,
-#         )
-
-#     waypoint_symbol = inquirer.prompt(
-#         [
-#             inquirer.List(
-#                 "waypoint",
-#                 message="Select a waypoint",
-#                 choices=waypoint_symbols,
-#             ),
-#         ]
-#     ).get("waypoint")
-
-#     return Waypoint(waypoint_symbol.split(":")[0])
+    waypoints = [
+        {"name": f"{waypoint.symbol} :: {waypoint.type_}", "value": waypoint}
+        for waypoint in waypoints
+    ]
+    return resource(waypoints, "System")

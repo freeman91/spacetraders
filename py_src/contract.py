@@ -1,11 +1,71 @@
-from pprint import pformat
+from datetime import datetime
+from pprint import pformat, pprint
 from typing import List
 
 from pydash import find
 
+from ship import Ship
+
+
+class PaymentMap:
+    on_accepted: str
+    on_fulfilled: str
+
+    def __init__(self, **kwargs) -> None:
+        self.on_accepted = kwargs.get("onAccepted")
+        self.on_fulfilled = kwargs.get("onFulfilled")
+
+    def __repr__(self) -> str:
+        return pformat(
+            {
+                "on_accepted": self.on_accepted,
+                "on_fulfilled": self.on_fulfilled,
+            }
+        )
+
+
+class DeliverMap:
+    destination_symbol: str
+    trade_symbol: str
+    units_fulfilled: int
+    units_required: int
+
+    def __init__(self, **kwargs) -> None:
+        self.destination_symbol = kwargs.get("destinationSymbol")
+        self.trade_symbol = kwargs.get("tradeSymbol")
+        self.units_fulfilled = kwargs.get("unitsFulfilled")
+        self.units_required = kwargs.get("unitsRequired")
+
+    def __repr__(self) -> str:
+        return pformat(
+            {
+                "destination_symbol": self.destination_symbol,
+                "trade_symbol": self.trade_symbol,
+                "units_fulfilled": self.units_fulfilled,
+                "units_required": self.units_required,
+            }
+        )
+
 
 class Terms:
-    pass
+    deadline: str
+    deliver: List[DeliverMap]
+    payment: dict
+
+    def __init__(self, **kwargs) -> None:
+        self.deadline = kwargs.get("deadline")
+        self.deliver = [DeliverMap(**item) for item in kwargs.get("deliver")]
+        self.payment = PaymentMap(**kwargs.get("payment"))
+
+    def __repr__(self) -> str:
+        return pformat(
+            {
+                "deadline": self.deadline,
+                "deliver": self.deliver,
+                "payment": self.payment,
+            }
+        )
+
 
 class Contract:
     id_: str
@@ -14,7 +74,7 @@ class Contract:
     expiration: str
     faction: str
     fulfilled: bool
-    terms: List[Terms]
+    terms: Terms
 
     def __repr__(self) -> str:
         return pformat(
@@ -29,43 +89,39 @@ class Contract:
             }
         )
 
-    def __init__(self, **kwargs):
-        print(f"{kwargs = }")
-        
-        # self.id_ = result.get("id")
-        # self._type = result.get("type")
-        # self.accepted = result.get("accepted")
-        # self.expiration = result.get("expiration")
-        # self.faction = result.get("factionSymbol")
-        # self.fulfilled = result.get("fulfilled")
-        # self.terms = result.get("terms")
+    def __init__(self, **kwargs) -> None:
+        self.id_ = kwargs.get("id")
+        self.type_ = kwargs.get("type")
+        self.accepted = kwargs.get("accepted")
+        self.expiration = kwargs.get("expiration")
+        self.faction = kwargs.get("factionSymbol")
+        self.fulfilled = kwargs.get("fulfilled")
+        self.terms = Terms(**kwargs.get("terms"))
 
-    # def accept(self):
-    #     return post_request(f"my/contracts/{self.id_}/accept")
-    
-    # def accept(self):
-    #     return post_request(f"my/contracts/{self.id_}/fulfill")
+    def log(self, message: str) -> None:
+        print(f"[{datetime.now().isoformat()[:19]}] :: {self.id_} :: {message}")
 
-    # def deliver(self, ship):
-    #     trade_symbol = self.terms.get("deliver")[0].get("tradeSymbol")
-    #     trade_good = find(
-    #         ship.cargo.get("inventory"),
-    #         lambda good: good.get("symbol") == trade_symbol,
-    #     )
-    #     units = trade_good.get("units")
+    def fulfill(self, client):
+        result = client.my.contracts.fulfill(self.id_)
+        pprint(result)
+        return result
 
-    #     result = post_request(
-    #         f"my/contracts/{self.id_}/deliver",
-    #         {
-    #             "shipSymbol": ship.symbol,
-    #             "tradeSymbol": trade_symbol,
-    #             "units": units,
-    #         },
-    #     )
+    def deliver(self, client, ship: Ship):
+        trade_symbol = self.terms.deliver[0].trade_symbol
+        stored_trade_good = find(
+            ship.cargo.inventory,
+            lambda good: good.symbol == trade_symbol,
+        )
 
-    #     ship.cargo = result.get("cargo")
-    #     self.terms = result.get("contract").get("terms")
-    #     log_message(str(units) + " " + trade_symbol + " delivered")
-    #     log_message("Fulfilled: " + str(self.terms.get("deliver")[0].get("unitsFulfilled", 0)))
+        result = client.my.contracts.deliver(
+            ship.symbol, self.id_, trade_symbol, stored_trade_good.units
+        )
 
-    #     return result
+        ship.cargo = result.get("cargo")
+        self.terms = Terms(**result.get("contract").get("terms"))
+        self.log(str(stored_trade_good.units) + " " + trade_symbol + " delivered")
+        self.log(
+            "Contract units fulfilled: " + str(self.terms.deliver[0].units_fulfilled)
+        )
+
+        return result

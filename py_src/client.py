@@ -1,43 +1,41 @@
-
+# pylint: disable=C0103
 
 import os
-from datetime import datetime
-from time import sleep
-from typing import List
-from pprint import pprint, pformat
-from pydash import find
+from pprint import pprint
 
 from dotenv import load_dotenv
 import requests
 
 from agent import Agent
 from contract import Contract
+from ship import Ship, ShipCargo, ShipNav
+from system import System
 
 load_dotenv()
 
 TOKEN = os.getenv("TOKEN")
+BASE_URL: str = "https://api.spacetraders.io/v2/"
 
-class Client:
-    token: str = TOKEN
-    base_url: str = "https://api.spacetraders.io/v2/"
-    agent: Agent
-    contracts: List
-    factions: List
-    ships: List
-    systems: List
-        
-    def log(message: str) -> None:
-        print("[" + datetime.now().isoformat()[:19] + "] :: " + message)
 
-    def get(path: str, log: bool = False):
+class ClientMeta:
+    token: str
+    base_url: str
+
+    def __init__(self, token: str = TOKEN, base_url: str = BASE_URL):
+        self.token = token
+        self.base_url = base_url
+
+    def get_request(self, path: str, log: bool = False):
         try:
             response = requests.get(
-                self.base_url + path, headers={"Authorization": f"Bearer {self.token}"}, timeout=30
+                self.base_url + path,
+                headers={"Authorization": f"Bearer {self.token}"},
+                timeout=30,
             )
 
-            if (log):
-                log(str(response))
-                log(pformat(response.json()))
+            if log:
+                print(response)
+                pprint(response.json())
 
             if response.status_code == 204:
                 return {}
@@ -47,8 +45,8 @@ class Client:
         except Exception as err:
             log(f"ERROR :: {err}")
             return {}
-        
-    def post(path: str, body=None, log=None):
+
+    def post_request(self, path: str, body=None, log=None):
         if not body:
             body = {}
 
@@ -60,9 +58,9 @@ class Client:
                 timeout=30,
             )
 
-            if (log):
-                log(str(response))
-                log(pformat(response.json()))
+            if log:
+                print(response)
+                pprint(response.json())
 
             return response.json().get("data")
 
@@ -70,268 +68,203 @@ class Client:
             log(f"ERROR :: {err}")
             return {}
 
-    # AGENT
-    def my_agent(self):
-        agent = self.get("my/agent")
-        self.agent = Agent(**agent)
-        pprint(agent)
-        return agent
 
-    # FACTIONS
-    def factions(self):
-        factions = self.get("factions")
-        self.factions = factions
-        pprint(factions)
-        return factions
+class FactionsClient(ClientMeta):
+    def __init__(self):
+        super().__init__()
 
-    def faction(self, faction_symbol: str):
-        faction = self.get(f"factions/{faction_symbol}")
-        pprint(faction)
-        return faction
-        
-    # SHIPS
-    def my_ships(self):
-        ships = self.get("my/ships")
-        self.ships = ships
-        return ships
+    def all(self):
+        return self.get_request("factions")
 
-    def get_ship(self, ship_symbol: str):
-        ship = self.get(f"my/ships/{ship_symbol}")
-        return ship
+    def get(self, faction_symbol: str):
+        return self.get_request(f"factions/{faction_symbol}")
 
-    def get_ship_cargo(self, ship_symbol: str):
-        cargo = self.get(f"my/ships/{ship_symbol}/cargo")
-        return cargo
-    
-    def get_ship_nav(self, ship_symbol: str):
-        nav = self.get(f"my/ships/{ship_symbol}/nav")
-        return nav
-    
-    def get_ship_cooldown(self, ship_symbol: str):
-        coooldown = self.get(f"my/ships/{ship_symbol}/cooldown")
-        return coooldown
 
-    def ship_orbit(self, ship_symbol: str):
-        response = self.post(f"my/ships/{ship_symbol}/orbit")
-        print(f"{response.get('nav') = }")
-        self.log(ship_symbol + f" orbiting {self.nav.get('waypointSymbol')}")
+class WaypointsClient(ClientMeta):
+    def __init__(self):
+        super().__init__()
 
-    def ship_dock(self, ship_symbol: str):
-        response = self.post(f"my/ships/{ship_symbol}/dock")
-        print(f"{response.get('nav') = }")
+    def all(self, system_symbol: str):
+        return self.get_request(f"systems/{system_symbol}/waypoints")
 
-        nav = response.get("nav")
-        if nav:
-            # self.nav = nav
-            self.log(ship_symbol + f" docked at {nav.get('waypointSymbol')}")
-        
-        else:
-            sleep(5)
-            self.ship_dock(ship_symbol)
+    def get(self, system_symbol: str, waypoint_symbol: str):
+        return self.get_request(f"systems/{system_symbol}/waypoints/{waypoint_symbol}")
 
-    def ship_refine(self, ship_symbol: str):
-        response = self.post(f"my/ships/{ship_symbol}/refine")
-        pprint(response)
-
-    def ship_chart(self, ship_symbol: str):
-        response = self.post(f"my/ships/{ship_symbol}/chart")
-        pprint(response)
-
-    def ship_survey(self, ship_symbol: str):
-        response = self.post(f"my/ships/{ship_symbol}/survey")
-        pprint(response)
-
-    def ship_extract(self, ship_symbol: str):
-        response = self.post(f"my/ships/{ship_symbol}/extract")
-        self.cargo = response.get("cargo")
-        extraction = response.get('extraction', {})
-        self.log(self.symbol + f" extracted: {extraction.get('yield')}")
-        pprint(response)
-
-    def ship_jettison(self, ship_symbol: str):
-        response = self.post(f"my/ships/{ship_symbol}/jettison")
-        pprint(response)
-
-    def ship_jump(self, ship_symbol: str):
-        response = self.post(f"my/ships/{ship_symbol}/jump")
-        pprint(response)
-
-    def ship_navigate(self, ship_symbol: str, waypoint_symbol: str):
-        response = self.post(f"my/ships/{ship_symbol}/navigate", {"waypointSymbol": waypoint_symbol})
-        pprint(response)
-        nav = response["nav"]
-        fuel = response["fuel"]
-        pprint(nav)
-        pprint(fuel)
-        self.log(
-            self.symbol
-            + f" in transit to {self.nav.get('route').get('destination').get('symbol')}"
+    def market(self, system_symbol: str, waypoint_symbol: str):
+        return self.get_request(
+            f"systems/{system_symbol}/waypoints/{waypoint_symbol}/market"
         )
 
-    def ship_warp(self, ship_symbol: str):
-        response = self.post(f"my/ships/{ship_symbol}/warp", {})
-        pprint(response)
+    def shipyard(self, system_symbol: str, waypoint_symbol: str):
+        return self.get_request(
+            f"systems/{system_symbol}/waypoints/{waypoint_symbol}/shipyard"
+        )
 
-    def ship_sell(self, ship_symbol: str, agent, trade_symbol: str, units: int):
-        result = self.post(
+    def jump_gate(self, system_symbol: str, waypoint_symbol: str):
+        return self.get_request(
+            f"systems/{system_symbol}/waypoints/{waypoint_symbol}/jump-gate"
+        )
+
+
+class SystemsClient(ClientMeta):
+    waypoints: WaypointsClient
+
+    def __init__(self):
+        super().__init__()
+        self.waypoints = WaypointsClient()
+
+    def all(self):
+        return [System(**system) for system in self.get_request("systems")]
+
+    def get(self, system_symbol: str):
+        return System(**self.get_request(f"systems/{system_symbol}"))
+
+
+class MyShipsClient(ClientMeta):
+    def __init__(self):
+        super().__init__()
+
+    def all(self):
+        return [Ship(**ship) for ship in self.get_request("my/ships")]
+
+    def get(self, ship_symbol: str):
+        return Ship(**self.get_request(f"my/ships/{ship_symbol}"))
+
+    def cargo(self, ship_symbol: str):
+        return ShipCargo(**self.get_request(f"my/ships/{ship_symbol}/cargo"))
+
+    def nav(self, ship_symbol: str):
+        return ShipNav(**self.get_request(f"my/ships/{ship_symbol}/nav"))
+
+    def cooldown(self, ship_symbol: str):
+        return self.get_request(f"my/ships/{ship_symbol}/cooldown")
+
+    def orbit(self, ship_symbol: str):
+        result = self.post_request(f"my/ships/{ship_symbol}/orbit")
+        return ShipNav(**result.get("nav"))
+
+    def dock(self, ship_symbol: str):
+        """
+        status:: 200
+        body::
+            - nav
+        """
+        response = self.post_request(f"my/ships/{ship_symbol}/dock")
+        nav = ShipNav(**response.get("nav"))
+        return nav
+
+    def refine(self, ship_symbol: str):
+        return self.post_request(f"my/ships/{ship_symbol}/refine")
+
+    def chart(self, ship_symbol: str):
+        return self.post_request(f"my/ships/{ship_symbol}/chart")
+
+    def survey(self, ship_symbol: str):
+        return self.post_request(f"my/ships/{ship_symbol}/survey")
+
+    def extract(self, ship_symbol: str):
+        return self.post_request(f"my/ships/{ship_symbol}/extract")
+
+    def jettison(self, ship_symbol: str):
+        return self.post_request(f"my/ships/{ship_symbol}/jettison")
+
+    def jump(self, ship_symbol: str):
+        return self.post_request(f"my/ships/{ship_symbol}/jump")
+
+    def navigate(self, ship_symbol: str, waypoint_symbol: str):
+        return self.post_request(
+            f"my/ships/{ship_symbol}/navigate", {"waypointSymbol": waypoint_symbol}
+        )
+
+    def warp(self, ship_symbol: str):
+        return self.post_request(f"my/ships/{ship_symbol}/warp", {})
+
+    def sell(self, ship_symbol: str, trade_symbol: str, units: int):
+        return self.post_request(
             f"my/ships/{ship_symbol}/sell",
             {"symbol": trade_symbol, "units": int(units)},
         )
 
-        agent.credits = result["agent"]["credits"]
-        cargo = result["cargo"]
-
-        transaction = result["transaction"]
-        response = {
-            "symbol": transaction.get("tradeSymbol"),
-            "units": transaction.get("units"),
-            "total": transaction.get("totalPrice"),
-            "pricePerUnit": transaction.get("pricePerUnit"),
-        }
-
-        self.log(ship_symbol + f" sold: {pformat(response)}")
-        sleep(.5)
-        return result["transaction"]
-
-    def ships_purchase(self, ship_type: str, waypoint: str):
-        result = self.post("my/ships", {"shipType": ship_type, "waypointSymbol": waypoint})
-        pprint(result)
-        return result
-
-    def ship_scan_systems(self, ship_symbol: str):
-        response = self.post(f"my/ships/{ship_symbol}/scan/systems")
-        systems = response.get("systems")
-        cooldown = response.get("cooldown")
-        print(f"{cooldown = }")
-        print(f"{systems = }")
-        return systems
-    
-    def ship_scan_waypoints(self, ship_symbol: str):
-        response = self.post(f"my/ships/{ship_symbol}/scan/waypoints")
-        waypoints = response.get("waypoints")
-        cooldown = response.get("cooldown")
-        print(f"{cooldown = }")
-        print(f"{waypoints = }")
-        return waypoints
-    
-    def ship_scan_ships(self, ship_symbol: str):
-        response = self.post(f"my/ships/{ship_symbol}/scan/ships")
-        ships = response.get("ships")
-        cooldown = response.get("cooldown")
-        print(f"{cooldown = }")
-        print(f"{ships = }")
-        return ships
-    
-    def ship_refuel(self, ship_symbol: str):
-        result = self.post(f"my/ships/{ship_symbol}/refuel")
-        fuel = result["fuel"]
-        
-        credits_ = result.get("agent").get("credits")
-        print(f"{fuel = }")
-        print(f"{credits_ = }")
-
-        self.log(ship_symbol + " refueled")
-
-    def ship_purchase_cargo(self, ship_symbol: str, trade_symbol: str, units: int):
-        result = self.post(f"my/ships/{ship_symbol}/purchase",{"symbol": trade_symbol, "units": units})
-        credits_ = result.get("agent").get("credits")
-        cargo  = result["cargo"]
-        transaction  = result["transaction"]
-
-        print(f"{credits_ = }")
-        print(f"{cargo = }")
-        print(f"{transaction = }")
-
-        self.log(ship_symbol + " cargo purchased")
-
-    def ship_transfer_cargo(self, ship_symbol: str, trade_symbol: str, units: int):
-        result = self.post(f"my/ships/{ship_symbol}/transfer",{"tradeSymbol": trade_symbol, "units": units, "shipSymbol": ship_symbol})
-        cargo  = result["cargo"]
-        print(f"{cargo = }")
-
-        self.log(ship_symbol + " cargo transfered")
-
-    # CONTRACTS
-    def my_contracts(self):
-        contracts = self.get("my/contracts")
-        self.contracts = contracts
-        return contracts
-
-    def contract(self, contract_id: str):
-        contract = self.get(f"my/contracts/{contract_id}")
-        return Contract(**contract)
-    
-    def contract_accept(self, contract_id: str):
-        response = self.post(f"my/contracts/{contract_id}/accept")
-        agent = response.get("agent")
-        contract = response.get("contract")
-
-        print(f"{agent = }")
-        print(f"{contract = }")
-        return response
-    
-    def contract_deliver(self, ship, contract_id: str):
-        trade_symbol = self.terms.get("deliver")[0].get("tradeSymbol")
-        trade_good = find(
-            ship.cargo.get("inventory"),
-            lambda good: good.get("symbol") == trade_symbol,
+    def purchase(self, ship_type: str, waypoint: str):
+        return self.post_request(
+            "my/ships", {"shipType": ship_type, "waypointSymbol": waypoint}
         )
-        units = trade_good.get("units")
 
-        result = self.post(
+    def scan_systems(self, ship_symbol: str):
+        return self.post_request(f"my/ships/{ship_symbol}/scan/systems")
+
+    def scan_waypoints(self, ship_symbol: str):
+        return self.post_request(f"my/ships/{ship_symbol}/scan/waypoints")
+
+    def scan_ships(self, ship_symbol: str):
+        return self.post_request(f"my/ships/{ship_symbol}/scan/ships")
+
+    def refuel(self, ship_symbol: str):
+        return self.post_request(f"my/ships/{ship_symbol}/refuel")
+
+    def purchase_cargo(self, ship_symbol: str, trade_symbol: str, units: int):
+        return self.post_request(
+            f"my/ships/{ship_symbol}/purchase", {"symbol": trade_symbol, "units": units}
+        )
+
+    def transfer_cargo(self, ship_symbol: str, trade_symbol: str, units: int):
+        return self.post_request(
+            f"my/ships/{ship_symbol}/transfer",
+            {"tradeSymbol": trade_symbol, "units": units, "shipSymbol": ship_symbol},
+        )
+
+
+class MyContractsClient(ClientMeta):
+    def __init__(self):
+        super().__init__()
+
+    def all(self):
+        return [Contract(**contract) for contract in self.get_request("my/contracts")]
+
+    def get(self, contract_id: str):
+        return Contract(**self.get_request(f"my/contracts/{contract_id}"))
+
+    def accept(self, contract_id: str):
+        return self.post_request(f"my/contracts/{contract_id}/accept")
+
+    def deliver(
+        self, ship_symbol: str, contract_id: str, trade_symbol: str, units: int
+    ):
+        return self.post_request(
             f"my/contracts/{contract_id}/deliver",
             {
-                "shipSymbol": ship.symbol,
+                "shipSymbol": ship_symbol,
                 "tradeSymbol": trade_symbol,
                 "units": units,
             },
         )
 
-        ship.cargo = result.get("cargo")
-        terms = result.get("contract").get("terms")
-        print(f"{terms = }")
-        self.log(str(units) + " " + trade_symbol + " delivered")
-        self.log("Fulfilled: " + str(self.terms.get("deliver")[0].get("unitsFulfilled", 0)))
-
-        return result
-
-    def contract_fulfill(self, contract_id: str):
-        result = self.post(
+    def fulfill(self, contract_id: str):
+        return self.post_request(
             f"my/contracts/{contract_id}/fulfill",
         )
 
-        agent  = result.get("agent")
-        contract  = result.get("contract")
 
-        print(f"{agent = }")
-        print(f"{contract = }")
+class MyClient(ClientMeta):
+    ships: MyShipsClient
+    contracts: MyContractsClient
 
-        return result
+    def __init__(self):
+        super().__init__()
+        self.ships = MyShipsClient()
+        self.contracts = MyContractsClient()
 
-    # SYSTEMS
-    def systems(self):
-        systems = self.get("systems")
-        self.systems = systems
-        return systems
+    def agent(self):
+        return Agent(**self.get_request("my/agent"))
 
-    def system(self, system_symbol: str):
-        pass
 
-    # WAYPOINTS
-    def waypoints(self, system_symbol: str):
-        waypoints = self.get(f"systems/{system_symbol}/waypoints")
-        print(f"{waypoints = }")
-        return waypoints
+class Client(ClientMeta):
+    my: MyClient
+    factions: FactionsClient
+    systems: SystemsClient
 
-    def waypoint(self, waypoint_symbol: str):
-        pass    
-
-    def waypoint_market(self):
-        pass
-
-    def waypoint_shipyard(self):
-        pass
-
-    def waypoint_jump_gate(self):
-        pass
-
+    def __init__(self):
+        super().__init__()
+        self.my = MyClient()
+        self.factions = FactionsClient()
+        self.systems = SystemsClient()

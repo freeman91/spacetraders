@@ -1,14 +1,11 @@
-from pprint import pformat, pprint
+from pprint import pformat
 
-from client import Client
 
 class Agent:
     account_id: str
     credits: int
-    client: Client
     headquarters: str
     symbol: str
-
 
     def __repr__(self) -> str:
         return pformat(
@@ -20,10 +17,8 @@ class Agent:
             }
         )
 
-    def __init__(self, client: Client, **kwargs) -> None:
-        print(f"{client = }")
-        pprint(kwargs)
-        # self.account_id = account_id
-        # self.symbol = symbol
-        # self.credits = _credits
-        # self.headquarters = headquarters
+    def __init__(self, **kwargs) -> None:
+        self.account_id = kwargs.get("accountId")
+        self.symbol = kwargs.get("symbol")
+        self.credits = kwargs.get("credits")
+        self.headquarters = kwargs.get("headquarters")

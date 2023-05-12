@@ -1,58 +1,53 @@
+# pylint: disable=C0103
 
 import math
 from pprint import pformat, pprint
 from typing import List
 
-from client import Client
 
-class Waypoint(Client):
+class Waypoint:
     symbol: str
     system_symbol: str
-    _type: str
+    type_: str
     faction: str
     orbitals: List
     traits: List
-    x_coord: int
-    y_coord: int
+    x: int
+    y: int
 
     def __repr__(self) -> str:
         return pformat(
             {
                 "symbol": self.symbol,
                 "sector_symbol": self.system_symbol,
-                "_type": self._type,
+                "type_": self.type_,
                 "faction": self.faction,
                 "orbitals": self.orbitals,
                 "traits": self.traits,
-                "x_coord": self.x_coord,
-                "y_coord": self.y_coord,
+                "x": self.x,
+                "y": self.y,
             }
         )
 
     def __init__(self, **kwargs):
-        pprint(kwargs)
-        # _system = get_system(symbol)
-        # result = get_request(f"systems/{_system}/waypoints/{symbol}")
-        # self.symbol = result.get("symbol")
-        # self.system_symbol = result.get("systemSymbol")
-        # self._type = result.get("type")
-        # self.faction = result.get("faction")
-        # self.orbitals = result.get("orbitals")
-        # self.traits = result.get("traits")
-        # self.x_coord = result.get("x")
-        # self.y_coord = result.get("y")
+        self.symbol = kwargs.get("symbolx")
+        self.system_symbol = kwargs.get("system_symbol")
+        self.type_ = kwargs.get("type")
+        self.faction = kwargs.get("faction")
+        self.orbitals = kwargs.get("orbitals")
+        self.traits = kwargs.get("traits")
+        self.x = kwargs.get("x")
+        self.y = kwargs.get("y")
 
-    # def get_market(self):
-    #     _system = get_system(self.symbol)
-    #     result = get_request(f"systems/{_system}/waypoints/{self.symbol}/market")
-    #     pprint(result)
-    #     return result
+    def market(self, client):
+        result = client.systems.waypoints.market(self.system_symbol, self.symbol)
+        pprint(result)
+        return result
 
-    # def get_shipyard(self):
-    #     _system = get_system(self.symbol)
-    #     result = get_request(f"systems/{_system}/waypoints/{self.symbol}/shipyard")
-    #     pprint(result)
-    #     return result
+    def shipyard(self, client):
+        result = client.systems.waypoints.shipyard(self.system_symbol, self.symbol)
+        pprint(result)
+        return result
 
     def distance(self, destination):
-        return math.sqrt((destination.x_coord - self.x_coord)**2 + (destination.y_coord - self.x_coord)**2)
+        return math.sqrt((destination.x - self.x) ** 2 + (destination.y - self.x) ** 2)
