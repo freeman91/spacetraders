@@ -1,3 +1,4 @@
+from pprint import pprint
 from pydash import find, filter_
 
 import prompts
@@ -27,9 +28,8 @@ def sell_trade_goods(_ship: Ship, _contract: Contract):
 
 def extract_sell_til_enough(_ship: Ship, _contract: Contract):
     while True:
-        _ship.get_cargo()
-        units = _ship.cargo.get("units")
-        capacity = _ship.cargo.get("capacity")
+        units = _ship.cargo.get("units", 0)
+        capacity = _ship.cargo.get("capacity", 0)
         log_message(f"Cargo: {units} / {capacity}")
 
         if units < capacity:
@@ -51,8 +51,6 @@ def extract_sell_til_enough(_ship: Ship, _contract: Contract):
 
 
 def extract_loop(_ship: Ship, _contract: Contract, _waypoint: Waypoint):
-    _ship.get_nav()
-
     while True:
         # 1: Orbitting _waypooint
         if _ship.nav.get("status") == "DOCKED":

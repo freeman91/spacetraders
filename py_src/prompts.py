@@ -8,7 +8,7 @@ from system import System
 from waypoint import Waypoint
 
 
-def contract(agent: Agent = None) -> Contract:
+def contract(client) -> Contract:
     """
     Select a contract.
 
@@ -16,104 +16,112 @@ def contract(agent: Agent = None) -> Contract:
     :return: Contract instance
     """
 
-    agent = agent or Agent()
+    # agent = agent or Agent()
 
-    contract_ids = map_(agent.contracts(), lambda contract: contract.get("id"))
-    contract_id = inquirer.prompt(
-        [
-            inquirer.List(
-                "contract",
-                message="Select a contract",
-                choices=contract_ids,
-            ),
-        ]
-    ).get("contract")
+    # contracts = filter_(agent.contracts(), lambda contract: contract.get("fulfilled") is fulfilled)
+    # contract_ids = map_(contracts, lambda contract: contract.get("id"))
 
-    return Contract(contract_id)
+    # if len(contract_ids) == 0:
+    #     return None
 
+    # if len(contract_ids) == 1:
+    #     return Contract(contract_ids[0])
 
-def ship(agent: Agent = None) -> Ship:
-    """
-    Select a ship.
+    # contract_id = inquirer.prompt(
+    #     [
+    #         inquirer.List(
+    #             "contract",
+    #             message="Select a contract",
+    #             choices=contract_ids,
+    #         ),
+    #     ]
+    # ).get("contract")
 
-    :param agent: Agent to use.
-    :return: Ship instance
-    """
-
-    agent = agent or Agent()
-
-    ship_names = map_(agent.get_ships(), lambda ship: ship.get("symbol"))
-    ship_name = inquirer.prompt(
-        [
-            inquirer.List(
-                "ship",
-                message="Select a ship",
-                choices=ship_names,
-            ),
-        ]
-    ).get("ship")
-
-    return Ship(ship_name)
+    # return Contract(contract_id)
 
 
-def system(agent: Agent = None) -> System:
-    """
-    Select a system.
+# def ship(agent: Agent = None) -> Ship:
+#     """
+#     Select a ship.
 
-    :param agent: Agent to use.
-    :return: System instance
-    """
+#     :param agent: Agent to use.
+#     :return: Ship instance
+#     """
 
-    agent = agent or Agent()
+#     agent = agent or Agent()
 
-    systems = map_(
-        agent.systems(),
-        lambda system: f"{system.get('symbol')}: {system.get('type')}",
-    )
-    system_name = inquirer.prompt(
-        [
-            inquirer.List(
-                "system",
-                message="Select a system",
-                choices=systems,
-            ),
-        ]
-    ).get("system")
+#     ship_names = map_(agent.get_ships(), lambda ship: ship.get("symbol"))
+#     ship_name = inquirer.prompt(
+#         [
+#             inquirer.List(
+#                 "ship",
+#                 message="Select a ship",
+#                 choices=ship_names,
+#             ),
+#         ]
+#     ).get("ship")
 
-    return System(system_name.split(":")[0])
+#     return Ship(ship_name)
 
 
-def waypoint(agent: Agent = None, _type: str = None) -> Waypoint:
-    """
-    Select a waypoint.
+# def system(agent: Agent = None) -> System:
+#     """
+#     Select a system.
 
-    :param agent: Agent to use.
-    :return: Waypoint instance
-    """
+#     :param agent: Agent to use.
+#     :return: System instance
+#     """
 
-    agent = agent or Agent()
+#     agent = agent or Agent()
 
-    _system = system(agent)
+#     systems = map_(
+#         agent.systems(),
+#         lambda system: f"{system.get('symbol')}: {system.get('type')}",
+#     )
+#     system_name = inquirer.prompt(
+#         [
+#             inquirer.List(
+#                 "system",
+#                 message="Select a system",
+#                 choices=systems,
+#             ),
+#         ]
+#     ).get("system")
 
-    waypoint_symbols = map_(
-        _system.waypoints,
-        lambda waypoint: f"{waypoint.get('symbol')}: {waypoint.get('type')}",
-    )
+#     return System(system_name.split(":")[0])
 
-    if _type:
-        waypoint_symbols = filter_(
-            waypoint_symbols,
-            lambda waypoint: _type in waypoint,
-        )
 
-    waypoint_symbol = inquirer.prompt(
-        [
-            inquirer.List(
-                "waypoint",
-                message="Select a waypoint",
-                choices=waypoint_symbols,
-            ),
-        ]
-    ).get("waypoint")
+# def waypoint(agent: Agent = None, _type: str = None) -> Waypoint:
+#     """
+#     Select a waypoint.
 
-    return Waypoint(waypoint_symbol.split(":")[0])
+#     :param agent: Agent to use.
+#     :return: Waypoint instance
+#     """
+
+#     agent = agent or Agent()
+
+#     _system = system(agent)
+
+#     waypoint_symbols = map_(
+#         _system.waypoints,
+#         lambda waypoint: f"{waypoint.get('symbol')}: {waypoint.get('type')}",
+#     )
+
+#     if _type:
+#         waypoint_symbols = filter_(
+#             waypoint_symbols,
+#             lambda waypoint: _type in waypoint,
+#         )
+
+#     waypoint_symbol = inquirer.prompt(
+#         [
+#             inquirer.List(
+#                 "waypoint",
+#                 message="Select a waypoint",
+#                 choices=waypoint_symbols,
+#             ),
+#         ]
+#     ).get("waypoint")
+
+#     return Waypoint(waypoint_symbol.split(":")[0])
