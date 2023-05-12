@@ -4,7 +4,7 @@ from typing import List
 
 from pydash import find
 
-from ship import Ship
+from ship import Ship, ShipCargo
 
 
 class PaymentMap:
@@ -117,7 +117,7 @@ class Contract:
             ship.symbol, self.id_, trade_symbol, stored_trade_good.units
         )
 
-        ship.cargo = result.get("cargo")
+        ship.cargo = ShipCargo(**result.get("cargo"))
         self.terms = Terms(**result.get("contract").get("terms"))
         self.log(str(stored_trade_good.units) + " " + trade_symbol + " delivered")
         self.log(
