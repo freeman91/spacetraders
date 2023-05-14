@@ -15,13 +15,13 @@ def log_message(message: str):
     print(f"[{datetime.now().isoformat()[:19]}] :: {message}")
 
 
-def extract_and_sell(ship: Ship, contract: Contract, threshold: int = 20):
+def extract_and_sell(ship: Ship, contract: Contract):
     while True:
         log_message(
             f"{ship.symbol} :: Cargo: {ship.cargo.units} / {ship.cargo.capacity}"
         )
 
-        if ship.cargo.units < ship.cargo.capacity:
+        if ship.cargo.units <= ship.cargo.capacity *.9:
             ship.extract()
 
         else:
@@ -33,7 +33,7 @@ def extract_and_sell(ship: Ship, contract: Contract, threshold: int = 20):
             ship.cargo.inventory,
             lambda good: good.symbol == contract.terms.deliver[0].trade_symbol,
         )
-        if contract_good and contract_good.units > threshold:
+        if contract_good and contract_good.units >= ship.cargo.capacity / 2:
             break
 
 
