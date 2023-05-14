@@ -21,7 +21,7 @@ def extract_and_sell(ship: Ship, contract: Contract):
             f"{ship.symbol} :: Cargo: {ship.cargo.units} / {ship.cargo.capacity}"
         )
 
-        if ship.cargo.units <= ship.cargo.capacity *.9:
+        if ship.cargo.units <= ship.cargo.capacity * 0.9:
             ship.extract()
 
         else:
@@ -84,4 +84,6 @@ def _contract():
 
 
 if __name__ == "__main__":
+    # system = Client().systems.get("X1-YP35")
+    # orbital_station = Client().systems.waypoints.get("X1-YP35", "X1-YP35-94217X")
     pass

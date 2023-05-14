@@ -193,7 +193,6 @@ class MyShipsClient(ClientMeta):
         return self.post_request(
             f"my/ships/{ship_symbol}/navigate",
             {"waypointSymbol": waypoint_symbol},
-            log=True,
         )
 
     def warp(self, ship_symbol: str):

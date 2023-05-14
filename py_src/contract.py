@@ -92,6 +92,11 @@ class Contract:
         pprint(result)
         return result
 
+    def accept(self):
+        result = self.client_my_contracts.accept(self.id_)
+        pprint(result)
+        return result
+
     def deliver(self, ship: Ship):
         trade_symbol = self.terms.deliver[0].trade_symbol
         stored_trade_good = find(
