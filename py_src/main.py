@@ -11,6 +11,10 @@ from ship import Ship
 from waypoint import Waypoint
 
 
+def log_message(message: str):
+    print(f"[{datetime.now().isoformat()[:19]}] :: {message}")
+
+
 def extract_and_sell(ship: Ship, contract: Contract, threshold: int = 20):
     while True:
         log_message(
@@ -60,20 +64,24 @@ def extract_loop(ship: Ship, contract: Contract, waypoint: Waypoint):
         ship.orbit()
 
 
-def log_message(message: str):
-    print(f"[{datetime.now().isoformat()[:19]}] :: {message}")
-
-
 def setup_extraction_loop():
     log_message("Setup Extraction Loop...")
 
     ship = prompts.ship()
     contract = prompts.contract()
-    waypoint = prompts.waypoint("ASTEROID_FIELD")
+    waypoint = Client().systems.waypoints.get("X1-YP35", "X1-YP35-57315F")
+    # waypoint = prompts.waypoint("ASTEROID_FIELD")
 
     extract_loop(ship, contract, waypoint)
 
 
+def _agent():
+    return Client().my.agent()
+
+
+def _contract():
+    return prompts.contract()
+
+
 if __name__ == "__main__":
-    agent = Client().my.agent()
-    pprint(agent)
+    pass

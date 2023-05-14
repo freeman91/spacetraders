@@ -19,6 +19,24 @@ TOKEN: str = os.getenv("TOKEN")
 BASE_URL: str = "https://api.spacetraders.io/v2/"
 
 
+def register(symbol: str = "ROCINANTE", faction: str = "GALACTIC"):
+    result = requests.post(
+        BASE_URL + "register",
+        {"faction": faction, "symbol": symbol},
+        timeout=30,
+    )
+
+    print(result)
+    pprint(result.json())
+
+    agent = Agent(**result.get("agent"))
+    contract = Contract(**result.get("contract"))
+    faction = result.get("faction")
+    ship = Ship(**result.get("ship"))
+    token = result.get("token")
+    return agent, contract, ship, faction, token
+
+
 class ClientMeta:
     def __init__(self, token: str = TOKEN, base_url: str = BASE_URL):
         self.token: str = token
@@ -175,6 +193,7 @@ class MyShipsClient(ClientMeta):
         return self.post_request(
             f"my/ships/{ship_symbol}/navigate",
             {"waypointSymbol": waypoint_symbol},
+            log=True,
         )
 
     def warp(self, ship_symbol: str):

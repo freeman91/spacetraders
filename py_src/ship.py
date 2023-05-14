@@ -360,7 +360,10 @@ class Ship:
         return self.orbit()
 
     def navigate(self, waypoint_symbol: str):
-        result = self.client_my_ships.navigate(self.symbol, waypoint_symbol)
+        result = self.client_my_ships.navigate(
+            self.symbol,
+            waypoint_symbol,
+        )
 
         self.nav = ShipNav(**result.get("nav"))
         self.fuel = ShipFuel(**result.get("fuel"))
