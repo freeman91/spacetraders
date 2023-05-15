@@ -7,6 +7,8 @@ from typing import List
 
 from pydash import filter_
 
+import prompts
+
 
 class ShipNavRouteWaypoint:
     def __init__(self, **kwargs) -> None:
@@ -436,6 +438,26 @@ class Ship:
         sleep(0.5)
         return result["transaction"]
 
-    def purchase(self, ship_type: str, waypoint):
+    def purchase(self, waypoint):
+        shipyard = waypoint.shipyard()
+        ships = shipyard.get("ships")
+        ship_types = [
+            {"name": f"{ship_type}", "value": ship_type}
+            for ship_type in shipyard.get("shipTypes")
+        ]
+
+        if ships:
+            ship_types = [
+                {
+                    "name": f"{ship.get('name')} :: {ship.get('type')} :: {ship.get('purchasePrice')}",
+                    "value": ship.get("type"),
+                }
+                for ship in ships
+            ]
+
+        ship_type = prompts.ship_type(ship_types)
+
         result = self.client_my_ships.purchase(ship_type, waypoint.symbol)
         pprint(result.get("transaction"))
+
+        return result.get("transaction")

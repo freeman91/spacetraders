@@ -76,3 +76,7 @@ def waypoint(type_: str = None) -> Waypoint:
     ]
     waypoint_ = resource(waypoints, "System")
     return Client().systems.waypoints.get(system_.symbol, waypoint_.symbol)
+
+
+def ship_type(ship_types: List[str]) -> str:
+    return resource(ship_types, "Ship Type")

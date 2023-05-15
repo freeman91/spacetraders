@@ -83,7 +83,10 @@ def _contract():
     return prompts.contract()
 
 
+def _orbital_station():
+    return Client().systems.waypoints.get("X1-YP35", "X1-YP35-94217X")
+
+
 if __name__ == "__main__":
     # system = Client().systems.get("X1-YP35")
-    # orbital_station = Client().systems.waypoints.get("X1-YP35", "X1-YP35-94217X")
     pass

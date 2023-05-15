@@ -1,7 +1,7 @@
 # pylint: disable=C0103
 
 import math
-from pprint import pformat, pprint
+from pprint import pformat
 from typing import List
 
 
@@ -32,14 +32,10 @@ class Waypoint:
         self.y: int = kwargs.get("y")
 
     def market(self):
-        result = self.client_systems_waypoints.market(self.system_symbol, self.symbol)
-        pprint(result)
-        return result
+        return self.client_systems_waypoints.market(self.system_symbol, self.symbol)
 
     def shipyard(self):
-        result = self.client_systems_waypoints.shipyard(self.system_symbol, self.symbol)
-        pprint(result)
-        return result
+        return self.client_systems_waypoints.shipyard(self.system_symbol, self.symbol)
 
     def distance(self, destination):
         return math.sqrt((destination.x - self.x) ** 2 + (destination.y - self.x) ** 2)
