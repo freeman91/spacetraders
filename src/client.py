@@ -204,7 +204,6 @@ class MyShipsClient(ClientMeta):
         return self.post_request(
             f"my/ships/{ship_symbol}/sell",
             {"symbol": trade_symbol, "units": int(units)},
-            log=True,
         )
 
     def purchase(self, ship_type: str, waypoint_symbol: str):
@@ -280,7 +279,7 @@ class MyClient(ClientMeta):
         self.contracts: MyContractsClient = MyContractsClient()
 
     def agent(self):
-        return Agent(**self.get_request("my/agent", log=True))
+        return Agent(**self.get_request("my/agent"))
 
 
 class Client(ClientMeta):
