@@ -31,10 +31,11 @@ def resource(resources: List, resource_type: str):
     return find(resources, lambda resource: resource["name"] == _resource).get("value")
 
 
-def contract(fulfilled: bool = False) -> Contract:
-    contracts = filter_(
-        Client().my.contracts.all(), lambda contract: contract.fulfilled is fulfilled
-    )
+def contract(fulfilled: bool = None) -> Contract:
+    contracts = Client().my.contracts.all()
+
+    if isinstance(fulfilled, bool):
+        contracts = filter_(contracts, lambda contract: contract.fulfilled == fulfilled)
 
     if not contracts:
         return None

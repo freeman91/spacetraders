@@ -17,7 +17,7 @@ def log_message(message: str):
     print(f"[{datetime.now().isoformat()[:19]}] :: {message}")
 
 
-def extract_and_sell(ship: Ship, contract: Contract):
+def extract_and_sell(ship: Ship, contract: Contract = None):
     while True:
         log_message(
             f"{ship.symbol} :: Cargo: {ship.cargo.units} / {ship.cargo.capacity}"
@@ -31,15 +31,16 @@ def extract_and_sell(ship: Ship, contract: Contract):
             ship.sell(contract)
             ship.orbit()
 
-        contract_good = find(
-            ship.cargo.inventory,
-            lambda good: good.symbol == contract.terms.deliver[0].trade_symbol,
-        )
-        if contract_good and contract_good.units >= ship.cargo.capacity / 2:
-            break
+        if contract:
+            contract_good = find(
+                ship.cargo.inventory,
+                lambda good: good.symbol == contract.terms.deliver[0].trade_symbol,
+            )
+            if contract_good and contract_good.units >= ship.cargo.capacity / 2:
+                break
 
 
-def extract_loop(ship: Ship, contract: Contract, waypoint: Waypoint):
+def extract_loop(ship: Ship, waypoint: Waypoint, contract: Contract = None):
     while True:
         # 1: Orbiting _waypooint
         if ship.nav.status == "DOCKED":
@@ -54,26 +55,27 @@ def extract_loop(ship: Ship, contract: Contract, waypoint: Waypoint):
         # 2: Extract and sell until have enough _contract trade
         extract_and_sell(ship, contract)
 
-        # 4: Navigate to planet
-        ship.navigate(contract.terms.deliver[0].destination_symbol)
-        ship.dock()
+        if contract:
+            # 3: Navigate to planet
+            ship.navigate(contract.terms.deliver[0].destination_symbol)
+            ship.dock()
 
-        # 5: Deliver trade goods in contract
-        contract.deliver(ship)
+            # 4: Deliver trade goods in contract
+            contract.deliver(ship)
 
-        # 6: Refuel
-        ship.refuel()
-        ship.orbit()
+            # 5: Refuel
+            ship.refuel()
+            ship.orbit()
 
 
 def setup_extraction_loop():
     log_message("Setup Extraction Loop...")
 
     ship = prompts.ship()
-    contract = prompts.contract()
     waypoint = prompts.waypoint(ship.nav.system_symbol, "ASTEROID_FIELD")
+    contract = prompts.contract(False)
 
-    extract_loop(ship, contract, waypoint)
+    extract_loop(ship, waypoint, contract)
 
 
 def _agent():
@@ -87,10 +89,6 @@ def _contract():
         f"Contract {deliver.units_fulfilled / deliver.units_required * 100:.2f}% fulfilled"
     )
     return result
-
-
-def _orbital_station():
-    return Client().systems.waypoints.get("X1-YP35", "X1-YP35-94217X")
 
 
 def _write_all_systems_to_file():

@@ -436,15 +436,18 @@ class Ship:
         self.cargo = ShipCargo(**result.get("cargo"))
         return self.cargo
 
-    def sell(self, contract):
-        sellable_goods = filter_(
-            self.cargo.inventory,
-            lambda trade_good: trade_good.symbol
-            not in (
-                "ANTIMATTER",
-                contract.terms.deliver[0].trade_symbol,
-            ),
-        )
+    def sell(self, contract=None):
+        sellable_goods = self.cargo.inventory
+
+        if contract:
+            sellable_goods = filter_(
+                sellable_goods,
+                lambda trade_good: trade_good.symbol
+                not in (
+                    "ANTIMATTER",
+                    contract.terms.deliver[0].trade_symbol,
+                ),
+            )
 
         result = None
         for good in sellable_goods:
@@ -464,7 +467,10 @@ class Ship:
         sleep(0.5)
         return result["transaction"]
 
-    def purchase(self, waypoint):
+    def purchase(self, waypoint=None):
+        if not waypoint:
+            waypoint = self.current_waypoint()
+
         shipyard = waypoint.shipyard()
         ships = shipyard.get("ships")
         ship_types = [
